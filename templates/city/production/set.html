@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load common map i18n humanize %}
+
+{% block head %}
+    <script src="{{ MEDIA_URL }}js/date/date.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="{{ MEDIA_URL }}css/module/city.css" type="text/css" media="screen" charset="utf-8"/>
+{% endblock %}
+
+{% block content %}
+    <h1>{% trans 'What is the city product?' %}</h1>
+    <h3 class="desc">{% trans 'At the moment you can only choose ONE product' %}</h3>
+
+    <div>
+        <form action="{% url production_set %}" method="post">
+            <dl>
+                <dd>
+                    <div><input type="radio" name="product" value="drug"/> DRUG</div>
+                </dd>
+                <dd>
+                    <div><input type="radio" name="product" value="explosives"/> EXPLOSIVES</div>
+                </dd>
+                <dd>
+                    <div><input type="radio" name="product" value="pimp"/> PIMP</div>
+                </dd>
+                <dd>
+                    <div><input type="radio" name="product" value="moonshine"/> MOONSHINE</div>
+                </dd>
+                <dd>
+                    <div><input type="radio" name="product" value="movie"/> MOVIE</div>
+                </dd>
+                <dd>
+                    <div><input type="radio" name="product" value="cloath"/> CLOATH</div>
+                </dd>
+            </dl>
+            <input type="hidden" name="action_type" value="set_product">
+            <input type="submit" value="SET"/>
+    </div>
+
+    <br style="clear: both;"/>
+
+{% endblock %}

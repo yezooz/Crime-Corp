@@ -1,0 +1,293 @@
+{% extends "admin/base_site.html" %}
+{% load adminmedia admin_list common intranet humanize %}
+
+{% if not is_popup %}{% block breadcrumbs %}
+    <div class="breadcrumbs"><a href="{% url home %}">{% trans "Home" %}</a> &rsaquo; <a
+            href="/intranet/">Intranet</a> &raquo; Zadania
+    </div>{% endblock %}{% endif %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <script type="text/javascript" src="{{ MEDIA_URL }}admin/js/jquery-1.3.2.js"></script>
+    <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}admin/css/dashboard.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}admin/css/changelists.css"/>
+    {# <link rel="stylesheet" type="text/css" media="screen" href="{{ MEDIA_URL }}css/common.css" /> #}
+
+    <style type="text/css" media="screen">
+        tr {
+            background-color: #fff;
+        }
+
+        tr:hover {
+            background-color: #eee;
+        }
+
+        .inactive {
+            display: none;
+        }
+
+        .inline_edit {
+            vertical-align: middle;
+        }
+    </style>
+
+    <script type="text/javascript">
+
+        function switch_activity() {
+            $('.inactive').removeClass('inactive').addClass('active');
+        }
+
+        function save_car(id) {
+            $.post('/intranet/jobs/', {'id': id, 'type': 'car', 'action': 'save_as_job'});
+            $('#car_' + id).remove();
+        }
+
+        function hide_car(id) {
+            $.post('/intranet/jobs/', {'id': id, 'type': 'car', 'action': 'hide'});
+            $('#car_' + id).remove();
+        }
+
+        function remove_job(id) {
+            $.post('/intranet/jobs/', {'id': id, 'action': 'delete', 'type': 'job'});
+            $('#job_' + id).remove();
+        }
+
+        function update_field(k, v, type, car_also) {
+            t = k.split('_');
+
+            id = t.pop();
+            field = t.join('_');
+
+            $.post('/intranet/jobs/', {
+                'id': id,
+                'action': 'update',
+                'type': type,
+                'field': field,
+                'value': v,
+                'car_also': car_also
+            });
+        }
+
+        $(document).ready(function () {
+
+            $('.inline_edit').click(function () {
+                $(this).html('<input type="text" value="' + $(this).text() + '"/>');
+                $(this).unbind('click');
+
+                $(this).keypress(function (e) {
+
+                    if (e.which == 13) {
+                        $(this).unbind('keypress');
+                        var value = $(this).children()[0].value;
+                        $(this).html(value);
+
+                        update_field($(this).attr('id'), value, 'job', false);
+                    }
+                });
+            });
+        });
+
+    </script>
+
+{% endblock %}
+
+{% block content %}
+
+    <h1>Samochody <span style="font-size: 10px">(<a href="#" onclick="switch_activity()">ukryte</a> / <a
+            href="/intranet/jobs/?no_img">bez obrazków</a>)</h1>
+    <div id="content-main">
+
+        <div id="changelist" class="module">
+            <form method="get" action="{% url intranet_jobs %}">
+                <div style="width: 25%; float: left;">
+                    <p>
+                        Producent:
+                        <select name="manuf">
+                            <option value="">---</option>
+                            {% for m in manufs %}
+                                <option value="{{ m }}"
+                                        {% ifequal m get.manuf %}selected="selected"{% endifequal %}>{{ m }}</option>
+                            {% endfor %}
+                        </select>
+                    </p>
+                    <p>Model: <input type="text" name="model" value="{{ get.model }}"/></p>
+
+                    <p>Silnik: <input type="text" name="engine" value="{{ get.engine }}"/></p>
+                </div>
+                <div style="width: 25%; float: left;">
+                    <p>BHP: <input type="text" name="bhp_from" value="{{ get.bhp_from }}" size="4"/> - <input
+                            type="text" name="bhp_to" value="{{ get.bhp_to }}" size="4"/></p>
+
+                    <p>Rok: <input type="text" name="year_from" value="{{ get.year_from }}" size="4"/> - <input
+                            type="text" name="year_to" value="{{ get.year_to }}" size="4"/></p>
+
+                    <p>Masa: <input type="text" name="weight_from" value="{{ get.weight_from }}" size="4"/> - <input
+                            type="text" name="weight_to" value="{{ get.weight_to }}" size="4"/></p>
+
+                    <p>P/W: <input type="text" name="pw_from" value="{{ get.pw_from }}" size="4"/> - <input type="text"
+                                                                                                            name="pw_to"
+                                                                                                            value="{{ get.pw_to }}"
+                                                                                                            size="4"/>
+                    </p>
+                </div>
+                <div style="width: 25%; float: left;">
+                    <p>Sprint: <input type="text" name="sprint_from" value="{{ get.sprint_from }}" size="4"/> - <input
+                            type="text" name="sprint_to" value="{{ get.sprint_to }}" size="4"/></p>
+
+                    <p>Max: <input type="text" name="max_from" value="{{ get.max_from }}" size="4"/> - <input
+                            type="text" name="max_to" value="{{ get.max_to }}" size="4"/></p>
+
+                    <p>Drive: <select name="drive">
+                        <option value="">---</option>
+                        <option value="AWD" {% ifequal get.drive 'AWD' %}selected="selected"{% endifequal %}>AWD
+                        </option>
+                        <option value="FWD" {% ifequal get.drive 'FWD' %}selected="selected"{% endifequal %}>FWD
+                        </option>
+                        <option value="RWD" {% ifequal get.drive 'RWD' %}selected="selected"{% endifequal %}>RWD
+                        </option>
+                    </select></p>
+                    <p>Drzwi: <select name="doors">
+                        <option value="">---</option>
+                        <option value="2" {% ifequal get.doors '2' %}selected="selected"{% endifequal %}>2</option>
+                        <option value="4" {% ifequal get.doors '4' %}selected="selected"{% endifequal %}>4</option>
+                        <option value="1" {% ifequal get.doors '1' %}selected="selected"{% endifequal %}>1</option>
+                        <option value="3" {% ifequal get.doors '3' %}selected="selected"{% endifequal %}>3</option>
+                        <option value="5" {% ifequal get.doors '5' %}selected="selected"{% endifequal %}>5</option>
+                    </select></p>
+                </div>
+
+                <br style="clear: both"/>
+
+                <p>
+                    <input type="hidden" name="search" value="1"/>
+                    <input type="submit" value="Szukaj"/>&nbsp;
+                    <a href="{% url intranet_jobs %}">czyść</a>
+                </p>
+            </form>
+            <br style="clear: both"/>
+        </div>
+
+        {% if results %}
+            <h3>Wyniki ({{ results|length }})</h3>
+            <table cellspacing="0">
+                <thead>
+                <tr>
+                    <th>&nbsp;</th>
+                    <th>Model</th>
+                    <th>Silnik</th>
+                    <th>&nbsp;</th>
+                    <th>Moc</th>
+                    <th>Max</th>
+                    <th>0-100</th>
+                    <th>0-80</th>
+                    <th>Masa</th>
+                    <th>BHP/ton</th>
+                    <th>Drv</th>
+                    <th>D</th>
+                    <th>Spalanie</th>
+                    <th>CO<sub>2</sub></th>
+                    <th>Rozmiar</th>
+                    <th>&nbsp;</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for car in results %}
+                    <tr id="car_{{ car.id }}">
+                        <th>{% if not car.in_cards %}
+                            <a href="javascript:void(0);" onclick="save_car({{ car.id }})">+</a>{% endif %}</th>
+                        <td>{{ car.manuf }} {{ car.model }} ({{ car.year }})</td>
+                        <td>{{ car.engine_up }} {% if car.cylinders %}({{ car.cylinders }}){% endif %}</td>
+                        <td>{% if not car.in_cards %}
+                            <a href="javascript:void(0);" onclick="hide_car({{ car.id }})">ukryj</a>{% else %}
+                            -{% endif %}</td>
+                        <td>{% if car.power_bhp %}{{ car.power_bhp }} ({{ car.power_kw }}) @
+                            {{ car.power_rpm }}{% else %}-{% endif %}</td>
+                        <td>{% if car.top_speed %}{{ car.top_speed }} {{ car.top_speed_unit }}{% else %}
+                            -{% endif %}</td>
+                        <td>{% if car.sprint_0_100 %}{{ car.sprint_0_100 }}{% else %}-{% endif %}</td>
+                        <td>{% if car.sprint_0_80 %}{{ car.sprint_0_80 }}{% else %}-{% endif %}</td>
+                        <td>{% if car.weight %}{{ car.weight }} {{ car.weight_unit }}{% else %}-{% endif %}</td>
+                        <td>{% if car.power_to_weight %}{{ car.power_to_weight }}{% else %}-{% endif %}</td>
+                        <td>{{ car.drive }}</td>
+                        <td>{{ car.doors }}d</td>
+                        <td>{% if car.fuel_min %}{{ car.fuel_min }}{% else %}-{% endif %} /
+                            {% if car.fuel_avg %}{{ car.fuel_avg }}{% else %}-{% endif %} /
+                            {% if car.fuel_max %}{{ car.fuel_max }}{% else %}-{% endif %} {% if car.fuel_cap %}(
+                                {{ car.fuel_cap }} max){% endif %}</td>
+                        <td>{% if car.co2 %}{{ car.co2 }} {{ car.co2_unit }}{% else %}-{% endif %}</td>
+                        <td>{{ car.length }}x{{ car.width }}x{{ car.height }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <br style="clear: both"/>
+        {% else %}
+            {% if get.search %}
+                brak wyników
+            {% endif %}
+        {% endif %}
+
+        {% if jobs %}
+            <table cellspacing="0">
+                <thead>
+                <tr>
+                    {# <th><input type="checkbox" id="action-toggle" style="display: inline;"/></th> #}
+                    <th>&nbsp;</th>
+                    <th>Nazwa</th>
+                    <th>Pełna</th>
+                    <th>Opis</th>
+                    <th>Producent</th>
+                    <th>Szansa</th>
+                    <th colspan="2">&nbsp;</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for job in jobs %}
+                    <tr id="job_{{ job.id }}" class="{% if not job.is_active %}inactive{% endif %}">
+                        <td>
+                            <select name="tier_{{ job.id }}"
+                                    onchange="update_field('tier_{{ job.id }}', this.value, 'job')">
+                                <option value="">---</option>
+                                {% for g in groups %}
+                                    <option value="{{ g.0 }}"
+                                            {% ifequal g.0 job.tier %}selected="selected"{% endifequal %}>{{ g.1 }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td><span class="inline_edit" id="name_{{ job.id }}">{{ job.name }}</span></td>
+                        <td><span class="inline_edit" id="full_name_{{ job.id }}">{{ job.full_name }}</span></td>
+                        <td><span class="inline_edit" id="desc_{{ job.id }}">{{ job.desc }}</span></td>
+                        <td><span class="inline_edit" id="manuf_{{ job.id }}">{{ job.manuf }}</span></td>
+                        <td><span class="inline_edit" id="chance_{{ job.id }}">{{ job.chance }}</span></td>
+                        <td>
+                            <select name="is_active_{{ job.id }}"
+                                    onchange="update_field('is_active_{{ job.id }}', this.value, 'job')">
+                                <option value="1" {% if job.is_active %}selected="selected"{% endif %}>pokaż</option>
+                                <option value="0" {% if not job.is_active %}selected="selected"{% endif %}>ukryj
+                                </option>
+                            </select> |
+                            <a href="javascript:void(0);" onclick="remove_job({{ job.id }})">usuń</a>
+                            </select>
+                        </td>
+                        <td><span class="inline_edit" id="img_{{ job.id }}">{% if job.img %}{{ job.img }}{% else %}
+                            none{% endif %}</span> {% if job.img %}(
+                            <a href="{{ MEDIA_URL }}/{{ job.img }}" target="_blank">link</a>){% else %}(
+                            <a href="http://images.google.com/images?hl=en&client=safari&rls=en&um=1&q={{ job.name }}&sa=N&start=21&ndsp=21#start=0&imgsz=svga&tbo=1"
+                               target="_blank">find</a>){% endif %}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+        {% endif %}
+
+        <p class="paginator">
+            {{ jobs|length }} zadań
+        </p>
+
+        </form>
+    </div>
+    </div>
+
+
+{% endblock %}

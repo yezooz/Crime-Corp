@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% load common i18n %}
+{% block title %}{% trans 'Hookers' %}{% endblock %}
+
+{% block content %}
+    <h1>{% trans 'Hookers' %}</h1>
+
+    {% if request.engine.city.in_my_city %}
+        <h3 class="description">{% trans "It's always a good idea to buy some hookers and let them work for you. It's easy money. Some day if decide to go into porn business, those with pretty faces may bring you even more cash." %}</h3>
+
+        <table class="data" style="width: 500px;">
+            <thead>
+            <tr>
+                <th>{% trans 'Name' %}</th>
+                <th>{% trans 'Look' %}</th>
+                <th>{% trans 'Price' %}</th>
+                <th>{% trans 'Income' %}</th>
+                <th>{% trans 'Buy' %}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in items %}
+                <form action="{% url hooker %}" method="post">
+                    <input type="hidden" name="hooker_id" value="{{ item.id }}"/>
+                    <input type="hidden" name="action_type" value="buy"/>
+                    <tr class="{% cycle '' 'odd' %}">
+                        <td class="name"><b>{{ item.name }}</b></td>
+                        <td><b>{{ item.look }}</b>/10</td>
+                        <td>
+                            <span title="{% trans 'Cash' %}" class="cash">&nbsp;<b>${{ item.base_price }}</b></span>
+                            {% ifnotequal item.credit 0 %}
+                                &nbsp;
+                                <span title="{% trans 'Credits' %}" class="credit">&nbsp;<b>{{ item.credit }}</b></span>
+                            {% endifnotequal %}
+                        </td>
+                        <td><span title="{% trans 'Cash' %}"
+                                  class="cash">&nbsp;</span><b>+${{ item.base_per_day_cash }}</b>/{% trans 'day' %}</td>
+                        <td><input type="submit" value="{% trans 'Buy' %}"/></td>
+                    </tr>
+                </form>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        {% if inventory %}
+            <h2>{% trans 'My Hookers' %}
+                ({{ inventory|length }} {% trans 'of' %} {{ request.engine.user.profile.max_hookers }})</h2>
+
+            <table class="data" style="width: 300px;">
+                <thead>
+                <tr>
+                    <th>{% trans 'Name' %}</th>
+                    <th>{% trans 'Look' %}</th>
+                    <th>{% trans 'Income' %}</th>
+                    <th>{% trans 'Sell' %}</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for item in inventory %}
+                    <form action="{% url hooker %}" method="post">
+                        <input type="hidden" name="hooker_id" value="{{ item.id }}"/>
+                        <input type="hidden" name="action_type" value="sell"/>
+
+                        <tr class="{% cycle '' 'odd' %}">
+                            <td class="name"><b>{{ item.name }}</b></td>
+                            <td><b>{{ item.look }}</b>/10</td>
+                            <td><span title="Cash"
+                                      class="cash">&nbsp;<b>${{ item.base_per_day_cash }}</b>/{% trans 'day' %}</span>
+                            </td>
+                            <td><input type="submit"
+                                       value="{% trans 'Sell for' %} ${{ item.base_price|TIMES:0.5|INT }}"/></td>
+                        </tr>
+                    </form>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+        {% endif %}
+
+    {% else %}
+
+        {% if inventory %}
+            <h2>{% trans 'Hookers in this city' %}</h2>
+
+            <table class="data" style="width: 300px;">
+                <thead>
+                <tr>
+                    <th>{% trans 'Name' %}</th>
+                    <th>{% trans 'Look' %}</th>
+                    <th>{% trans 'Income' %}</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for item in inventory %}
+                    <form action="{% url hooker %}" method="post">
+                        <input type="hidden" name="hooker_id" value="{{ item.id }}"/>
+                        <input type="hidden" name="action_type" value="sell"/>
+
+                        <tr class="{% cycle '' 'odd' %}">
+                            <td class="name"><b>{{ item.name }}</b></td>
+                            <td><b>{{ item.look }}</b>/10</td>
+                            <td><span title="Cash"
+                                      class="cash">&nbsp;<b>${{ item.base_per_day_cash }}</b>/{% trans 'day' %}</span>
+                            </td>
+                        </tr>
+                    </form>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <h2>{% trans 'There are no hookers in this city' %}</h2>
+        {% endif %}
+
+    {% endif %}
+
+{% endblock %}

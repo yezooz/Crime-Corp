@@ -1,0 +1,202 @@
+{% extends "admin/base_site.html" %}
+{% load adminmedia admin_list i18n common intranet humanize %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <script type="text/javascript" src="{{ MEDIA_URL }}js/jquery-1.3.2.js"></script>
+    <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/dashboard.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/changelists.css"/>
+    {# <link rel="stylesheet" type="text/css" media="screen" href="{{ MEDIA_URL }}css/common.css" /> #}
+
+    <style type="text/css" media="screen">
+        tr {
+            background-color: #fff;
+        }
+
+        tr:hover {
+            background-color: #eee;
+        }
+
+        .inactive {
+            display: none;
+        }
+
+        .inline_edit {
+            vertical-align: middle;
+        }
+    </style>
+
+    <script type="text/javascript">
+
+        function switch_activity() {
+            $('.inactive').removeClass('inactive').addClass('active');
+        }
+
+        function remove_item(id) {
+            $.post('/intranet/items/', {'id': id, 'action': 'delete'});
+            $('#item_' + id).remove();
+        }
+
+        function update_field(k, v) {
+            t = k.split('_');
+
+            id = t.pop();
+            field = t.join('_');
+
+            $.post('/intranet/items/', {'id': id, 'action': 'update', 'field': field, 'value': v});
+        }
+
+        $(document).ready(function () {
+
+            $('.inline_edit').click(function () {
+                $(this).html('<input type="text" value="' + $(this).text() + '"/>');
+                $(this).unbind('click');
+
+                $(this).keypress(function (e) {
+
+                    if (e.which == 13) {
+                        $(this).unbind('keypress');
+                        var value = $(this).children()[0].value;
+                        $(this).html(value);
+
+                        update_field($(this).attr('id'), value);
+                    }
+                });
+            });
+        });
+
+    </script>
+
+{% endblock %}
+
+{% if not is_popup %}{% block breadcrumbs %}
+    <div class="breadcrumbs"><a href="{% url home %}">{% trans "Home" %}</a> &rsaquo; <a
+            href="/intranet/">Intranet</a> &raquo; Przedmioty
+    </div>{% endblock %}{% endif %}
+
+{% block content %}
+
+    <h1>Przedmioty</h1>
+    <div id="content-main">
+        <ul class="object-tools">
+            <li><a class="addlink" href="add/">Dodaj zadanie</a></li>
+        </ul>
+
+        <div id="changelist" class="module">
+
+            <div class="actions">
+<span style="margin-left: 20px;">
+	tylko: <a href="?type=weapon">broń</a> | <a href="?type=armor">osłona</a> | <a href="?type=gadget">gadżet</a> | <a
+        href="?type=vehicle">auto</a> | <a href="?type=item">inne</a>
+</span>
+            </div>
+
+            <table cellspacing="0">
+                <thead>
+                <tr>
+                    <th style="width: 200px;">Nazwa</th>
+                    <th style="width: 100px;">Stats</th>
+                    <th style="width: 100px;">$</th>
+                    <th colspan="2">&nbsp;</th>
+                </tr>
+                </thead>
+                <tbody>
+                <form method="post" action="{% url intranet_items %}">
+                    {% for item in items %}
+                        <tr id="item_{{ item.id }}" {# class="{% if not item.is_active %}inactive{% endif %}" #}>
+                            <th><span class="inline_edit" id="name_{{ item.id }}">{{ item.name }}</span>
+
+                                <p><select name="type_{{ item.id }}"
+                                           onchange="update_field('type_{{ item.id }}', this.value)">
+                                    <option value="">---</option>
+                                    {% for g in groups %}
+                                        <option value="{{ g }}"
+                                                {% ifequal g item.type %}selected="selected"{% endifequal %}>{{ g }}</option>
+                                    {% endfor %}
+                                </select>
+
+                                    {% ifequal item.type 'vehicle' %}
+                                        &nbsp;<select name="tier_{{ item.id }}"
+                                                      onchange="update_field('tier_{{ item.id }}', this.value)">
+                                        <option value="">---</option>
+                                        {% for t in tiers %}
+                                            <option value="{{ t }}"
+                                                    {% ifequal t item.tier %}selected="selected"{% endifequal %}>
+                                                Tier {{ t }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    {% endifequal %}
+                                </p>
+
+                                {% if not item.is_active %}
+                                    <p>nieaktywne</p>
+                                {% endif %}
+                            </th>
+                            <td>
+                                ATT: <span class="inline_edit" id="attack_{{ item.id }}">{{ item.attack }}</span><br/>
+                                DEF: <span class="inline_edit" id="defense_{{ item.id }}">{{ item.defense }}</span><br/>
+                                RES: <span class="inline_edit" id="respect_{{ item.id }}">{{ item.respect }}</span>
+                            </td>
+                            <td>
+                                $ <span class="inline_edit" id="price_{{ item.id }}">{{ item.price }}</span><br/>
+                                C <span class="inline_edit" id="credit_{{ item.id }}">{{ item.credit }}</span><br/>
+                            </td>
+                            <td>
+                                <select name="is_active_{{ item.id }}"
+                                        onchange="update_field('is_active_{{ item.id }}', this.value)">
+                                    <option value="1" {% if item.is_active %}selected="selected"{% endif %}>pokaż
+                                    </option>
+                                    <option value="0" {% if not item.is_active %}selected="selected"{% endif %}>ukryj
+                                    </option>
+                                </select> |
+                                <a href="javascript:void(0);" onclick="remove_item({{ item.id }})">usuń</a>
+                                </select>
+                            </td>
+                            <td><span class="inline_edit" id="image_filename_{{ item.id }}">{% if item.image_filename %}
+                                {{ item.image_filename }}{% else %}none{% endif %}</span> {% if item.image_filename %}(
+                                <a href="{{ MEDIA_URL }}{{ item.image_filename }}" target="_blank">link</a>){% else %}(
+                                <a href="http://images.google.com/images?imgsz=qsvga&hl=en&client=safari&rls=en&um=1&q={{ item.name }}&sa=N&start=0&ndsp=21&imgtbs=z"
+                                   target="_blank">find</a>){% endif %}</td>
+                        </tr>
+                    {% endfor %}
+                </form>
+                <tr class="row_add">
+                    <form action="{% url intranet_items %}" method="post">
+                        <th>
+                            <a name="row_add">&nbsp;</a>
+                            <input type="text" name="name"/>
+
+                            <p><select name="type">
+                                <option value="">---</option>
+                                {% for g in groups %}
+                                    <option value="{{ g }}" }>{{ g }}</option>
+                                {% endfor %}
+                            </select></p>
+                        </th>
+                        <td>
+                            ATT: <input type="text" name="attack" size="6" value="0"/><br/>
+                            DEF: <input type="text" name="defense" size="6" value="0"/><br/>
+                            RES: <input type="text" name="respect" size="6" value="0"/>
+                        </td>
+                        <td>
+                            $ <input type="text" name="price" size="6" value="0"/><br/>
+                            C <input type="text" name="credit" size="2" value="0"/><br/>
+                        </td>
+                        <td colspan="2">
+                            <input type="hidden" name="action" value="add"/>
+                            <input type="submit" value="Dodaj" style="font-size: 16px;"/>
+                        </td>
+                    </form>
+                </tr>
+                </tbody>
+            </table>
+
+            <p class="paginator">
+                {{ items|length }} przedmiotów
+            </p>
+
+        </div>
+    </div>
+
+
+{% endblock %}

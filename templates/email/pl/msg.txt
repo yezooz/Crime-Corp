@@ -1,0 +1,3 @@
+Właśnie otrzymałeś/aś wiadomość:<br/>
+{{ msg }}
+<br/><a href="http://www.crimecorp.com">odwiedź Crime Corp aby odpowiedzieć</a>

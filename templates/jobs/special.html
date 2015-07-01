@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load chance %}
+{% block title %}{% trans 'Special jobs' %}{% endblock %}
+
+{% block content %}
+
+    <h3 class="description">Special jobs appears here</h3>
+
+    {% if items %}
+        <table class="data">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th title="Requirements">Req</th>
+                <th>Income</th>
+                <th>Chance</th>
+                <th>&nbsp;</th>
+            </tr>
+            <tbody>
+            {% for item in items %}
+                <tr class="{% cycle '' 'odd' %}">
+                    <td><b>{{ item.name }}</b></td>
+                    <td>
+                        <b>Attack:</b> {{ item.req_attack }}<br/>
+                        <b>Defense:</b> {{ item.req_respect }}
+                    </td>
+                    <td>${{ item.base_instant_cash }}</td>
+                    <td><b>{{ item|CHANCE:profile }}%</b></td>
+                    <td>
+                        <form action="{% url special_job %}" method="post">
+                            <input type="hidden" name="job_id" value="{{ item.id }}">
+                            <input type="submit" value="Do Job"/></p>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <h2>Currently no jobs</h2>
+    {% endif %}
+
+{% endblock %}

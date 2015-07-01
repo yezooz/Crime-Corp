@@ -1,0 +1,220 @@
+{% extends "admin/base_site.html" %}
+{% load adminmedia admin_list i18n common intranet humanize %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/dashboard.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/changelists.css"/>
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ MEDIA_URL }}css/common.css"/>
+{% endblock %}
+
+{% if not is_popup %}{% block breadcrumbs %}
+    <div class="breadcrumbs"><a href="{% url home %}">{% trans "Home" %}</a> &rsaquo; <a
+            href="/intranet/">Intranet</a> &raquo; Zadania
+    </div>{% endblock %}{% endif %}
+
+{% block content %}
+
+    <h1>Zadania</h1>
+    <div id="content-main">
+        <ul class="object-tools">
+            <li><a class="addlink" href="add/">Dodaj zadanie</a></li>
+        </ul>
+
+        <div id="changelist" class="module">
+            <form method="post" action="{% url intranet_jobs %}">
+
+                <div class="actions"><label>Akcja: <select name="action">
+                    <option selected="selected" value="">---------</option>
+                    {# <option value="delete_selected">Usuń wybrane Jobs</option> #}
+                </select></label>
+                    <button value="0" name="index" title="Wykonaj wybraną akcję" class="button" type="submit">Wykonaj
+                    </button>
+                </div>
+
+                <table cellspacing="0">
+                    <thead>
+                    <tr>
+                        <th>&nbsp;</th>
+                        <th style="width: 200px;">Zadanie</th>
+                        <th style="width: 50px;">Heat</th>
+                        <th style="width: 30px;">Master</th>
+                        <th style="width: 200px;">Req</th>
+                        <th style="width: 300px;">+</th>
+                        <th style="width: 200px;">Skills</th>
+                        <th>Loot</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for job in jobs %}
+                        <tr class="row_{{ forloop.counter }} {% if job.is_active %}active{% else %}inactive{% endif %}">
+                            <td>{% if job.is_premium %}
+                                <span style="background-color: #f00000; color: white;">PREMIUM</span>{% endif %}&nbsp;
+                            </td>
+                            <th>
+                                <a href="{% url intranet_jobs job.id %}#row_add">{{ job.name }}</a>
+
+                                <p>
+                                    {% robbery_tab_by_level job.level 1 %}
+                                </p>
+                            </th>
+                            <td><b>{{ job.heat }}</b></td>
+                            <td><b>{{ job.mastery_incr }}%</b></td>
+                            <td>
+                                <p><span class="attack">&nbsp;</span><b>{{ job.req_attack|intcomma }}</b></p>
+
+                                <p><span class="respect">&nbsp;</span><b>{{ job.req_respect|intcomma }}</b></p>
+                            </td>
+                            <td>
+                                <p>
+                                    <span class="cash">&nbsp;</span><b>${{ job.base_instant_cash|intcomma }}</b>
+                                    {% if job.base_per_day_cash %}<br/><span class="cash">&nbsp;</span>$
+                                        {{ job.base_per_day_cash|intcomma }} <b>dziennie</b>{% endif %}
+                                </p>
+
+                                <p>
+                                    <span class="attack">&nbsp;</span><b>
+                                    {{ job.base_attack|TIMES:job.attack_modifier_min}} -
+                                    {{ job.base_attack|TIMES:job.attack_modifier_max}}</b> ({{ job.base_attack }}
+                                    * {{ job.attack_modifier_min }}-{{ job.attack_modifier_max }})<br/>
+                                    <span class="defense">&nbsp;</span><b>
+                                    {{ job.base_attack|TIMES:job.attack_modifier_min}} -
+                                    {{ job.base_attack|TIMES:job.attack_modifier_max}}</b> ({{ job.base_attack }}
+                                    * {{ job.attack_modifier_min }}-{{ job.attack_modifier_max }})<br/>
+                                    <span class="respect">&nbsp;</span><b>
+                                    {{ job.base_respect|TIMES:job.respect_modifier_min}} -
+                                    {{ job.base_respect|TIMES:job.respect_modifier_max}}</b> ({{ job.base_respect }}
+                                    * {{ job.respect_modifier_min }}-{{ job.respect_modifier_max }})<br/>
+                            </td>
+                            <td>
+                                {% for req_name, reqs in job.reqs.iteritems %}
+                                    <p><b>{{ req_name }}</b><br/>
+                                        {% for name, lvl in reqs.iteritems %}
+                                            {{ name }} ({{ lvl }})<br/>
+                                        {% endfor %}
+                                    </p>
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% for loot, chance in job.loots.iteritems %}
+                                    <p>{{ all_items|KEY:loot }} - {{ chance }}%</p>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+
+                    <tr class="row_add">
+                        <form action="" method="post">
+                            <td>
+                                <a name="row_add">&nbsp;</a>
+                                {% if job %}<input type="hidden" name="job_id" value="{{ job.id }}"/>{% endif %}
+                                <input type="submit" value="{% if job %}Zmień{% else %}Dodaj{% endif %}"/>
+                                {% if job %}<p><a href="/intranet/jobs/#row_add">dodaj nowe</a>{% endif %}
+                            </td>
+                            <th>
+                                <input type="text" name="name" value="{{ job.name }}"/>
+
+                                <p>
+                                    <select name="level">
+                                        {% for tabs in robbery_tabs %}
+                                            <optgroup label="Poziom {{ forloop.counter }}">
+                                                {% for tab in tabs %}
+                                                    <option value="{{ tab.0 }}"
+                                                            {% ifequal tab.0 job.level %}selected="selected"{% endifequal %}>{{ tab.1 }}</option>
+                                                {% endfor %}
+                                            </optgroup>
+                                        {% endfor %}
+                                    </select>
+                                </p>
+                            </th>
+                            <td><input type="text" name="heat" size="3" value="{{ job.heat }}"/></td>
+                            <td><input type="text" name="mastery_incr" size="3" value="{{ job.mastery_incr }}"/>%</td>
+                            <td>
+                                <p><span class="attack">&nbsp;</span><input type="text" name="req_attack" size="6"
+                                                                            value="{{ job.req_attack }}"/></p>
+
+                                <p><span class="respect">&nbsp;</span><input type="text" name="req_respect" size="6"
+                                                                             value="{{ job.req_respect }}"/></p>
+                            </td>
+                            <td>
+                                <p>
+                                    <span class="cash">&nbsp;</span><b>$<input type="text" name="base_instant_cash"
+                                                                               size="6"
+                                                                               value="{{ job.base_instant_cash }}"/>
+                                    <br/><span class="cash">&nbsp;</span>$<input type="text" name="base_per_day_cash"
+                                                                                 size="6"
+                                                                                 value="{{ job.base_per_day_cash }}"/>
+                                    <b>dziennie</b>
+                                </p>
+
+                                <p>
+                                    <span class="attack">&nbsp;</span><input type="text" name="base_attack" size="6"
+                                                                             value="{{ job.base_attack }}"/> * <input
+                                        type="text" name="attack_modifier_min" size="4"
+                                        value="{{ job.attack_modifier_min }}"/>-<input type="text"
+                                                                                       name="attack_modifier_max"
+                                                                                       size="4"
+                                                                                       value="{{ job.attack_modifier_max }}"/><br/>
+                                    <span class="respect">&nbsp;</span><input type="text" name="base_respect" size="6"
+                                                                              value="{{ job.base_respect }}"/> * <input
+                                        type="text" name="respect_modifier_min" size="4"
+                                        value="{{ job.respect_modifier_min }}"/>-<input type="text"
+                                                                                        name="respect_modifier_max"
+                                                                                        size="4"
+                                                                                        value="{{ job.respect_modifier_max }}"/>
+                                </p>
+                            </td>
+                            <td>
+                                {% for i in iii %}
+                                    <p>
+                                        <select name="skill_{{ i }}">
+                                            <option value="">---</option>
+                                            {% for k,v in request.engine.settings.SKILLS.iteritems %}
+                                                <option value="{{ k }}"
+                                                        {% ifequal job_details.skill|KEY:i v %}selected="selected"{% endifequal %}>{{ v }}</option>
+                                            {% endfor %}
+                                        </select>&nbsp;
+                                        <input type="text" name="skill_{{ i }}_lvl" size="2"
+                                               {% if job_details.skill_lvl|KEY:i %}value="
+                                                       {{ job_details.skill_lvl|KEY:i }}"
+                                               {% else %}value="0"{% endif %}/>
+                                    </p>
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% for i in iii %}
+                                    <p>
+                                        <select name="loot_{{ i }}_item">
+                                            <option value="0">---</option>
+                                            {% for group,items in items.iteritems %}
+                                                <optgroup label="{{ group }}">
+                                                    {% for item in items.itervalues %}
+                                                        <option value="{{ item.id }}"
+                                                                {% ifequal job_details.loot|KEY:i item %}selected="selected"{% endifequal %}>{{ item.name }}
+                                                            {% if item.is_premium %}*{% endif %}</option>
+                                                    {% endfor %}
+                                                </optgroup>
+                                            {% endfor %}
+                                        </select>
+                                        &nbsp;&nbsp;<input type="text" size="2" name="loot_{{ i }}_chance"
+                                                           {% if job_details.loot_chance|KEY:i %}value="
+                                                                   {{ job_details.loot_chance|KEY:i }}"
+                                                           {% else %}value="0"{% endif %}/>%
+                                    </p>
+                                {% endfor %}
+                            </td>
+                        </form>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <p class="paginator">
+                    {{ jobs|length }} zadań
+                </p>
+
+            </form>
+        </div>
+    </div>
+
+
+{% endblock %}

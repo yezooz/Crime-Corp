@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load common i18n humanize %}
+{% block title %}{% trans 'Garage' %}{% endblock %}
+
+{% block head %}
+    <script src="{{ MEDIA_URL }}js/jquery.rating.pack.js" type="text/javascript"></script>
+    <link href="{{ MEDIA_URL }}css/jquery.rating.css" type="text/css" rel="stylesheet"/>
+{% endblock %}
+
+{% block content %}
+
+    <h2>{% trans 'Garage' %}
+        ({% if inventory|length|GT:request.engine.user.profile.max_cars %}
+            <span style="color: red;">{{ inventory|length }}</span>
+        {% else %}{{ inventory|length }}{% endif %}
+        {% trans 'of' %} {{ request.engine.user.profile.max_cars }})</h2>
+
+    {# <h3 class="description"></h3> #}
+
+    {% if inventory %}
+        <table class="data" style="width: 600px;">
+            <thead>
+            <tr>
+                <th style="width: 30%">{% trans 'Name' %}</th>
+                {# <th style="width: 20%">{% trans 'Look' %}</th> #}
+                <th style="width: 15%">{% trans 'Respect' %}</th>
+                <th style="width: 30%;">&nbsp;</th>
+                <th style="width: 25%;">&nbsp;</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in inventory %}
+                {% ifequal forloop.counter request.engine.user.profile.max_cars|PLUS:1 %}
+                    <tr>
+                        <td colspan="4"><span style="font-size: 14px; font-weight: bold;"><center>{% trans 'Park on the street' %}</center></span>
+                        </td>
+                    </tr>
+                {% endifequal %}
+
+                <tr class="{% cycle '' 'odd' %}">
+                    <td class="name"><b>{{ item.name }}</b></td>
+                    {# <td> #}
+                    {# 	<a href="{{ settings.BASE_MEDIA_URL }}{{ item.image_filename}}" class="preview" title="{{ item.name }}"> #}
+                    {# 		<div id="star-{{ forloop.counter }}" class="rating"></div> #}
+                    {# 		<script type="text/javascript">$('#star-{{ forloop.counter }}').rating(null, {maxvalue:5, curvalue:{{ item.look|DIV:2 }}});</script> #}
+                    {# 	</a> #}
+                    {# </td> #}
+                    <td><span class="respect">+<b>{{ item.respect }}</b></span></td>
+                    <td>
+                        <a href="{% url garage_sell item.id %}"
+                           style="font-size: 12px; border: grey solid 1px; padding: 3px; background-color: lightgrey;">{% trans 'Sell for' %}
+                            ${{ item.price|TIMES:0.5|INT|intcomma }}</a>
+                    </td>
+                    <td>
+                        <a href="{% url auction_sell 'car' item.id %}"
+                           style="font-size: 12px; border: grey solid 1px; padding: 3px; background-color: lightgrey;">{% trans 'Sell on auction' %}</a>
+                    </td>
+                </tr>
+                </form>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <h2>{% trans 'Your garage is empty yet.' %} <a href="{% url auction %}">{% trans 'Buy something' %}.</a></h2>
+    {% endif %}
+{% endblock %}

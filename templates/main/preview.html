@@ -1,0 +1,147 @@
+{% load i18n %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+    <meta name="author" content=""/>
+    <meta name="keywords" content=""/>
+    <meta name="description" content=""/>
+    <meta name="robots" content="all"/>
+    <meta name="google-site-verification" content="uKrcQVSZuJUHWp_a_qPWeeRSQRCMw1eVPjonM8Tx_S8"/>
+    <title>Crime Corp</title>
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ MEDIA_URL }}css/test.css"/>
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ MEDIA_URL }}css/index.css"/>
+</head>
+
+<body>
+<div id="top">
+    {# <a href="http://forum.crimecorp.com" target="_blank">{% trans 'FORUM' %}&nbsp;&raquo;</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="http://blog.crimecorp.com" target="_blank">blog&nbsp;&raquo;</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="http://twitter.com/crimecorp/" target="_blank">twitter&nbsp;&raquo;</a> #}
+</div>
+<div id="header">
+    <div class="logo"><a href="{% url home %}"><img src="{{ MEDIA_URL }}images/logo-1_beta_2.png" alt="Crime Corp"/></a>
+    </div>
+</div>
+<div id="container">
+    {% if message %}
+        <h3 class="description">
+            {{ message }}
+        </h3>
+    {% endif %}
+
+    <div style="padding-left: 50px; padding-right: 70px; width: 200px; float: left;">
+        <form method="post" action="{% url auth_login %}">
+            <table>
+                <thead>
+                <tr>
+                    <th colspan="2" style="font-size: 20px;">{% trans 'Login' %}</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>
+                        <label>{% trans 'Nickname:' %} </label>
+                    </td>
+                    <td>
+                        <input type="text" name="username"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label>{% trans 'Password:' %} </label>
+                    </td>
+                    <td>
+                        <input type="password" name="password"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="text-align: center">
+                        <input type="hidden" name="action_type" value="login"/>
+                        <input class="button" type="submit" value="{% trans 'Enter the game' %}"/>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </form>
+    </div>
+
+    <div style="width: 200px; float: left;">
+        <form method="post" action="{% url auth_login %}">
+            <table>
+                <thead>
+                <tr>
+                    <th colspan="2" style="font-size: 20px;">{% trans 'Register' %}</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>
+                        <label for="id_username">{% trans 'Nickname' %}:</label>
+                    </td>
+                    <td>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <br/><em style="color: red;">{{ form.username.errors|join:", "}}</em>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="id_email">{% trans 'E-mail' %}:</label>
+                    </td>
+                    <td>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <br/><em style="color: red;">{{ form.email.errors|join:", "}}</em>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="id_password1">{% trans 'Password' %}:</label>
+                    </td>
+                    <td>
+                        {{ form.password1 }}
+                        {% if form.password1.errors %}
+                            <br/><em style="color: red;">{{ form.password1.errors|join:", "}}</em>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="id_password2">{% trans 'Password (repeat)' %}:</label>
+                    </td>
+                    <td>
+                        {{ form.password2 }}
+                        {% if form.password2.errors %}
+                            <br/><em style="color: red;">{{ form.password2.errors|join:", "}}</em>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="text-align: center">
+                        <input type="hidden" name="action_type" value="register"/>
+                        <input class="button" type="submit" value="{% trans 'Start your new life' %}"/>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </form>
+    </div>
+
+    <img src="{{ MEDIA_URL }}images/buildings_1.png" style="clear: both; float: left; margin-left: -60px;"
+         alt="Buildings"/>
+</div>
+<script type="text/javascript">
+    var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+    document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+    try {
+        var pageTracker = _gat._getTracker("UA-317705-12");
+        pageTracker._trackPageview();
+    } catch (err) {
+    }</script>
+</body>
+</html>

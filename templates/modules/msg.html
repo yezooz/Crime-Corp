@@ -1,0 +1,11 @@
+{% load common %}
+<li>
+	<span class="msg">
+		<strong><a href="{% url profile msg.sender.username %}">{{ msg.sender }}</a></strong>:
+		<span class="msg_content">{{ msg.content|striptags|parse_msg_links|safe }}</span>
+		<span class="msg_details">{{ msg.sent_at|timestr }}</span>
+	</span>
+    <span class="msg_actions"><a href="javascript:void(0);"
+                                 onclick="Engine.msg_box_toggle('{{ msg.sender }}'); return false;" class="reply">
+        &nbsp;</a></span>
+</li>

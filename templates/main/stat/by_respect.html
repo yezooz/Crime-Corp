@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load common humanize i18n %}
+{% block title %}{% trans 'Leaderboard' %}{% endblock %}
+
+{% block content %}
+<h1>{% trans 'Leaderboard' %}</h1>
+
+<h3>Wyszukaj użytkownika&nbsp;
+    <form action="{% url stat_search %}" method="post"><input type="text" name="username" size="20"
+                                                              value="{{ search_q }}"/>&nbsp;<input type="submit"
+                                                                                                   value="{% trans 'Search' %}"/>
+    </form>
+</h3>
+
+<table class="data" style="width: 300px;">
+    <thead>
+    <tr>
+        <th style="width: 5%">&nbsp;</th>
+        <th style="width: 20%">{% trans 'Name' %}</th>
+        <th>{% trans 'Respect' %}</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for item in items %}
+        <tr class="{% cycle '' 'odd' %}"
+            {% ifequal item request.engine.user.profile %}style="background-color: #DDD"{% endifequal %}>
+            <td class="name">{{ page_no|MINUS:1|TIMES:50|PLUS:forloop.counter|INT }}</td>
+            <td class="name"><b><a href="{% url profile item.username %}">{{ item.username }}</a></b></td>
+            <td style="text-align: center">{{ item.total_respect|INT|intcomma }}</td>
+            <td style="text-align: center"><a
+                    href="{% url city_enter item.default_city_id %}">{% trans 'visit city' %}</a></td>
+            <td><a href="javascript:void(0);" onclick="Engine.msg_box_toggle('{{ item.username }}'); return false;"
+                   class="send"
+                   style="background-position:50% 50%; background-repeat:no-repeat; cursor:pointer; display:block; padding:16px 8px 0 25px; text-decoration:none;">
+                &nbsp;</a></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<p style="font-size: 18px;">{% trans 'Page' %}:
+    {% for num in page.page_range %}
+    {% if not num %} ...
+    {% else %}
+    {% ifequal num page_no %}
+    <b>{{ num }}</b>
+    {% else %}
+    <a href="{% url stats_by_respect num %}">{{ num }}</a>
+    {% endifequal %}
+    {% endif %}
+    {% endfor %}
+</p>
+{% endblock %}

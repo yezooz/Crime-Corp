@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load common map i18n humanize %}
+
+{% block head %}
+    <script src="{{ MEDIA_URL }}js/date/date.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="{{ MEDIA_URL }}css/module/city/common.css" type="text/css" media="screen"
+          charset="utf-8"/>
+{% endblock %}
+
+{% block content %}
+    <h1 title="{% trans 'Units' %}"><img alt="{% trans 'Units' %}"
+                                         src="{{ MEDIA_URL }}images/capt_units_{{ request.engine.pref_lang }}.png"/>
+    </h1>
+
+    <div class="niceBoxOut" style="width: 580px;">
+        <div class="niceBox tributeBox" style="padding:0; text-align:center;">
+            <h2 style="color: red">
+                <div style="font-size: 16px;">{% trans "You can't hire units in this city, you first need to own 10 or more buildings. To achieve that send your units from other cities over here." %}</div>
+            </h2>
+        </div>
+    </div>
+
+    <br style="clear: both;"/>
+
+    <h2>{% trans "Can't hire, so" %} <a href="javascript:void(0)"
+                                        onclick="$('#ajax').load('{% url city_units_move %}');">{% trans 'move more units here' %}</a>
+    </h2>
+    <table class="data" style="width: 300px;">
+        <thead>
+        <tr>
+            <th>{% trans 'Name' %}</th>
+            <th>{% trans 'Stats' %}</th>
+            <th>{% trans 'Got' %}</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for unit_id, unit_list in my_units.iteritems %}
+            <tr class="{% cycle '' 'odd' %}">
+                <td class="name"><b>{{ unit_list.0 }}</b></td>
+                <td>
+                    <b>{% trans 'ATTACK' %}</b> {{ unit_list.1|intcomma }}<br/><b>{% trans 'DEFENSE' %}</b> {{ unit_list.2|intcomma }}
+                </td>
+                <td>x<b style="font-size: 15px;">{{ unit_list.3|intcomma }}</b></td>
+            </tr>
+            </form>
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

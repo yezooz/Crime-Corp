@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans 'Payments' %}{% endblock %}
+
+{% block content %}
+
+    {# <p>Select your country: #}
+    {# <select name="country" id="country" onchange="" size="1"> #}
+    {# 	{% for country in countries %} #}
+    {# 		<option value="{{ country.code }}" {% ifequal country.code pref_lang %}selected="selected"{% endifequal %}>{{ country.name_en }}</option> #}
+    {# 	{% endfor %} #}
+    {# </select> #}
+    {# </p> #}
+
+    {% ifequal LANGUAGE_CODE 'pl' %}
+        <h3 class="description">Płatności SMS</h3>
+        <p style="font-size: 12px;">
+            Wyślij SMS o treści <b>PJP CRIME</b> pod:
+        <ul>
+            <li><b>7943</b>, aby otrzymać <b>25 kredytów</b> (10,98zł z VAT)</li>
+            <li><b>91909</b>, aby otrzymać <b>55 kredytów</b> (23,18zł z VAT)</li>
+            <li><b>92505</b>, aby otrzymać <b>85 kredytów</b> (30,50zł z VAT)</li>
+        </ul>
+        </p>
+        <p style="font-size: 12px;">
+            W odpowiedzi otrzymasz kod, który wpisz poniżej:
+        </p>
+        <form action="{% url payment %}" method="post">
+            <label for="code">Podaj kod</label><input type="text" name="code" value="" size="6"/>
+            <input type="submit" value="Sprawdź">
+        </form>
+    {% endifequal %}
+
+    {# <h1>Payment</h1> #}
+
+    <h3 class="description">{% trans "These offers are provided by third party service, not by Crime Corp. Please read all fine print associated with any offer, as some offers can take up to 2 days to credit points. If you are missing points from completing an offer, please click the green 'View Offer Status' button below." %}</h3>
+
+    <iframe src="http://super.kitnmedia.com/super/offers?h=pjmzngrj.868179336&uid={{ request.engine.user.user.id }}"
+            frameborder="0" width="700" height="2200" scrolling="no"></iframe>
+
+{% endblock %}

@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% load common i18n humanize %}
+{% block title %}{% trans 'Inventory' %}{% endblock %}
+
+{% block content %}
+    {% ifequal tab 'weapon' %}
+        <h1>{% trans 'Weapons' %}</h1>
+        {# <h3 class="description">WEAPON DESCRIPTION</h3> #}
+    {% endifequal %}
+    {% ifequal tab 'armor' %}
+        <h1>{% trans 'Armors' %}</h1>
+        {# <h3 class="description">ARMOR DESCRIPTION</h3> #}
+    {% endifequal %}
+
+    <div style="margin-top: 15px;">
+        <ul class="horizontal">
+            <li><a href="{% url shop "weapon" %}">
+                {% ifequal tab 'weapon' %}<b>{% trans 'Weapons' %}</b>
+                    {% else %}{% trans 'Weapons' %}{% endifequal %}
+            </a></li>
+            <li><a href="{% url shop "armor" %}">
+                {% ifequal tab 'armor' %}<b>{% trans 'Armors' %}</b>
+                    {% else %}{% trans 'Armors' %}{% endifequal %}
+            </a></li>
+        </ul>
+    </div>
+    <table class="data">
+        <thead>
+        <tr>
+            <th style="width: 100px;">{% trans 'Name' %}</th>
+            <th style="width: 50px;">{% trans 'Stats' %}</th>
+            <th style="width: 50px;">{% trans 'Price' %}</th>
+            <th>{% trans 'Buy' %}</th>
+            <th>&nbsp;</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for item in items %}
+            <tr class="{% cycle 'none' 'odd' %}">
+                {% if request.engine.item.ITEM|KEY:item.id %}
+                    <td class="name"><b>{{ request.engine.item.ITEM|KEY:item.id|KEY_BY_LANG:LANGUAGE_CODE }}</b></td>
+                {% else %}
+                    <td class="name"><b>{{ item.name }}</b></td>
+                {% endif %}
+                <td>
+                    <span title="{% trans 'Attack' %}" class="attack"
+                          style="line-height: 1.6em;">&nbsp;</span><b>+{{ item.attack|intcomma }}</b><br/>
+                    <span title="{% trans 'Defense' %}" class="defense"
+                          style="line-height: 1.6em;">&nbsp;</span><b>+{{ item.defense|intcomma }}</b><br/>
+                    <span title="{% trans 'Respect' %}" class="respect"
+                          style="line-height: 1.6em;">&nbsp;</span><b>+{{ item.respect|intcomma }}</b>
+                </td>
+                <td>
+                    <span title="{% trans 'Cash' %}" class="cash"
+                          style="line-height: 1.6em;">&nbsp;</span><b>${{ item.price|intcomma }}</b>
+                    {% ifnotequal item.credit 0 %}
+                        <br/>
+                        <span title="{% trans 'Credits' %}" class="credit" style="line-height: 1.6em;">&nbsp;</span>
+                        <b>{{ item.credit }}</b>
+                    {% endifnotequal %}
+                </td>
+                <td>
+                    <form action="{% url shop tab %}" method="post">
+                        <div>
+                            <input type="hidden" name="item_id" value="{{ item.id }}"/>
+                            <input type="hidden" name="action_type" value="buy"/>
+                            <input type="submit" value="{% trans 'Buy' %}"/>
+                        </div>
+                    </form>
+                </td>
+                <td><img src="{{ MEDIA_URL }}{{ item.image_filename }}" alt="{{ item }}"/></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <h1>{% trans 'Inventory' %}</h1>
+
+    <table class="data">
+        <thead>
+        <tr>
+            <th>{% trans 'Action' %}</th>
+            <th style="width: 100px;">{% trans 'Name' %}</th>
+            <th style="width: 50px;">{% trans 'Stats' %}</th>
+            <th style="width: 75px;">&nbsp;</th>
+            <th>&nbsp;</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% if active_inventory %}
+            <tr>
+                <th colspan="6">{% trans 'Active' %}</th>
+            </tr>
+            {% for item in active_inventory %}
+                <tr class="{% cycle 'none' 'odd' %}">
+                    <td><a href="{% url deactivate_item item.id %}">{% trans 'Deactivate' %}</a></td>
+                    {% if request.engine.item.ITEM|KEY:item.id %}
+                        <td class="name"><b>{{ request.engine.item.ITEM|KEY:item.id|KEY_BY_LANG:LANGUAGE_CODE }}</b>
+                        </td>
+                    {% else %}
+                        <td class="name"><b>{{ item.name }}</b></td>
+                    {% endif %}
+                    <td colspan="2">
+                        <span title="{% trans 'Attack' %}" class="attack"
+                              style="line-height: 1.6em;">&nbsp;<b>+{{ item.attack|intcomma }}</b></span><br/>
+                        <span title="{% trans 'Defense' %}" class="defense"
+                              style="line-height: 1.6em;">&nbsp;<b>+{{ item.defense|intcomma }}</b></span><br/>
+                        <span title="{% trans 'Respect' %}" class="respect"
+                              style="line-height: 1.6em;">&nbsp;<b>+{{ item.respect|intcomma }}</b></span>
+                    </td>
+                    <td><img src="{{ MEDIA_URL }}{{ item.image_filename }}" alt="{{ item }}"/></td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <th colspan="5">{% trans 'No active items' %}</th>
+            </tr>
+        {% endif %}
+
+        {% if inventory %}
+            <tr>
+                <th colspan="5">{% trans 'Available' %}</th>
+            </tr>
+            {% for item in inventory %}
+                <tr class="{% cycle 'none' 'odd' %}">
+                    <td><a href="{% url activate_item item.id %}">{% trans 'Activate' %}</a></td>
+                    {% if request.engine.item.ITEM|KEY:item.id %}
+                        <td class="name"><b>
+                            {{ request.engine.item.ITEM|KEY:item.id|KEY_BY_LANG:LANGUAGE_CODE|safe }}</b></td>
+                    {% else %}
+                        <td class="name"><b>{{ item.name }}</b></td>
+                    {% endif %}
+                    <td>
+                        <span title="{% trans 'Attack' %}" class="attack"
+                              style="line-height: 1.6em;">&nbsp;<b>+{{ item.attack|intcomma }}</b></span><br/>
+                        <span title="{% trans 'Defense' %}" class="defense"
+                              style="line-height: 1.6em;">&nbsp;<b>+{{ item.defense|intcomma }}</b></span><br/>
+                        <span title="{% trans 'Respect' %}" class="respect"
+                              style="line-height: 1.6em;">&nbsp;<b>+{{ item.respect|intcomma }}</b></span>
+                    </td>
+                    <td>
+                        <form action="{% url shop tab %}" method="post">
+                            <div>
+                                <input type="hidden" name="item_id" value="{{ item.id }}"/>
+                                <input type="hidden" name="action_type" value="sell"/>
+                                <input type="submit" value="{% trans 'Sell for' %} ${{ item.price|TIMES:0.5|INT }}"/>
+                            </div>
+                        </form>
+                    </td>
+                    <td><img src="{{ MEDIA_URL }}{{ item.image_filename }}" alt="{{ item }}"/></td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <th colspan="6">{% trans 'No inactive items' %}</th>
+            </tr>
+        {% endif %}
+        </tbody>
+    </table>
+
+{% endblock %}

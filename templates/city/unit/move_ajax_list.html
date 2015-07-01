@@ -1,0 +1,18 @@
+{% load i18n %}
+<div class="ajaxInner">
+    {% if units %}
+        <h3>{% trans 'Move your units to city of' %} {{ request.engine.city.city_map.name }} {% trans 'from' %}:</h3>
+        <ul>
+            {% for unit in units %}
+                <li>{% if unit.2 %}<a href="javascript:void(0);"
+                                      onclick="$('#ajax').load('{% url city_units_move unit.0 %}');">{{ unit.1 }}</a>{% else %}
+                    {{ unit.1 }}{% endif %} ({{ unit.2 }} {% trans 'units' %})
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <script type="text/javascript" charset="utf-8">
+            alert("{% trans 'No units in other cities' %}");
+        </script>
+    {% endif %}
+</div>

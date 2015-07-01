@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load common i18n humanize %}
+{% block title %}{% trans 'Auctions' %}{% endblock %}
+
+{% block content %}
+{# <h3 class="description"></h3> #}
+<div style="margin-top: 15px;">
+    <ul class="horizontal">
+        <li><a href="{% url auction %}">
+            {% ifequal tab 'auction' %}<b>{% trans 'Auctions' %}</b>
+                {% else %}{% trans 'Auctions' %}{% endifequal %}
+        </a></li>
+        <li><a href="{% url auction_bidding %}">
+            {% ifequal tab 'bidding' %}<b>{% trans 'Bidding' %}</b>
+                {% else %}{% trans 'Bidding' %}{% endifequal %}
+        </a></li>
+        <li><a href="{% url auction_bidded %}">
+            {% ifequal tab 'bidded' %}<b>{% trans 'Bidded' %}</b>
+                {% else %}{% trans 'Bidded' %}{% endifequal %}
+        </a></li>
+    </ul>
+</div>
+{% if selected %}
+<table class="data" style="width: 650px;">
+    <thead>
+    <tr>
+        <th style="width: 55%">{% trans 'Name' %}</th>
+        <th style="width: 15%">{% trans 'Respect' %}</th>
+        <th style="width: 10%">{% trans 'My Max' %}</th>
+        <th style="width: 10%">{% trans 'Price' %}</th>
+        <th style="width: 15%">{% trans 'End' %}</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for item in selected %}
+        <tr class="{% cycle '' 'odd' %}">
+            <td class="name"><b><a href="{% url auction_details item.auction.id %}">{{ item.auction.title }}</a></b>
+            </td>
+            <td><span class="respect">+<b>{{ item.auction.respect|intcomma }}</b></span></td>
+            <td>$<b>{{ item.max_price|intcomma }}</b></td>
+            <td>$<b>{{ item.auction.current_price|intcomma }}</b></td>
+            <td>{{ item.auction_end_at|timestr }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% if items_count|GT:20 %}
+<p style="font-size: 18px;">{% trans 'Page' %}:
+    {% for num in page.page_range %}
+    {% if not num %} ...
+    {% else %}
+    {% ifequal num page_no %}
+    <b>{{ num }}</b>
+    {% else %}
+    <a href="{% url auction num %}">{{ num }}</a>
+    {% endifequal %}
+    {% endif %}
+    {% endfor %}
+</p>
+{% endif %}
+
+{% else %}
+<h2>{% trans 'No auctions right now' %}</h2>
+{% endif %}
+<br/>
+{% endblock %}

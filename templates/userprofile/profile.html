@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load common i18n humanize %}
+{% block content %}
+
+    {% ifequal profile.username request.engine.user.user.username %}
+        <h3>({% trans 'this is your public profile' %})</h3>
+    {% endifequal %}
+
+    <h1 style="padding-left: 50px;">{{ profile.username }}</h1>
+
+    <h2>{% trans 'Stats' %}</h2>
+    <h3 title="{% trans 'Attack power is' %} {{ profile.total_attack|intcomma }}">{% trans 'Attack' %}:
+        <b>{{ profile.total_attack|PRITIFY }}</b></h3>
+    <h3 title="{% trans 'Defense power is' %} {{ profile.total_defense|intcomma }}">{% trans 'Defense' %}:
+        <b>{{ profile.total_defense|PRITIFY }}</b></h3>
+    <h3 title="{% trans 'Respect level is' %} {{ profile.total_respect|intcomma }}">{% trans 'Respect' %}:
+        <b>{{ profile.total_respect|PRITIFY }}</b>
+    </h3>
+    <br style="clear: both;"/>
+
+    <h2>{% trans 'Inventory' %}</h2>
+    <h3 style="font-size: 16px;">{% trans 'Weapons' %}</h3>
+    {% if inventory.weapon %}
+        {% for item in inventory.weapon %}
+            <p style="display: block; float: left; width: 250px; height: 150px;">
+                {% if request.engine.item.ITEM|KEY:item.id %}
+                    <span style="font-size: 14px; font-weight: bold;">{{ request.engine.item.ITEM|KEY:item.id|KEY_BY_LANG:LANGUAGE_CODE }}</span>
+                {% else %}
+                    <span style="font-size: 14px; font-weight: bold;">{{ item.name }}</span>
+                {% endif %}
+                <br/>
+                <img style="padding-top: 10px;" src="{{ MEDIA_URL }}{{ item.image_filename }}"/>
+            </p>
+        {% endfor %}
+    {% else %}
+        <p>{% trans 'no weapons so far' %}</p>
+    {% endif %}
+    <br style="clear: both;"/>
+
+    <h3 style="font-size: 16px;">{% trans 'Armors' %}</h3>
+    {% if inventory.armor %}
+        {% for item in inventory.armor %}
+            <p style="display: block; float: left; width: 200px; height: 150px;">
+                {% if request.engine.item.ITEM|KEY:item.id %}
+                    <span style="font-size: 14px; font-weight: bold;">{{ request.engine.item.ITEM|KEY:item.id|KEY_BY_LANG:LANGUAGE_CODE }}</span>
+                {% else %}
+                    <span style="font-size: 14px; font-weight: bold;">{{ item.name }}</span>
+                {% endif %}
+                <br/>
+                <img style="padding-top: 10px;" src="{{ MEDIA_URL }}{{ item.image_filename }}"/>
+            </p>
+        {% endfor %}
+    {% else %}
+        <p>{% trans 'no armors so far' %}</p>
+    {% endif %}
+    <br style="clear: both;"/>
+
+    <h3 style="font-size: 16px;">{% trans 'Gadgets' %}</h3>
+    {% if inventory.gadget %}
+        {% for item in inventory.gadget %}
+            <p style="display: block; float: left; width: 200px; height: 150px;">
+                {% if request.engine.item.ITEM|KEY:item.id %}
+                    <span style="font-size: 14px; font-weight: bold;">{{ request.engine.item.ITEM|KEY:item.id|KEY_BY_LANG:LANGUAGE_CODE }}</span>
+                {% else %}
+                    <span style="font-size: 14px; font-weight: bold;">{{ item.name }}</span>
+                {% endif %}
+                <br/>
+                <img style="padding-top: 10px;" src="{{ MEDIA_URL }}{{ item.image_filename }}"/>
+            </p>
+        {% endfor %}
+    {% else %}
+        <p>{% trans 'no gadgets so far' %}</p>
+    {% endif %}
+    <br style="clear: both;"/>
+
+    <h2>{% trans 'Garage' %}</h2>
+    {% if garage %}
+        {% for item in garage %}
+            <h3 style="font-size: 16px;">{{ item }}</h3>
+            <p><img src="{{ settings.BASE_MEDIA_URL }}{{ item.image_filename }}"/></p>
+        {% endfor %}
+    {% else %}
+        <p>{% trans 'garage is empty' %}</p>
+    {% endif %}
+
+{% endblock %}

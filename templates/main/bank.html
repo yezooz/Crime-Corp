@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load common i18n humanize %}
+{% block title %}{% trans 'Bank' %}{% endblock %}
+
+{% block content %}
+    <h1>{% trans 'Bank' %}</h1>
+    {# <h3 class="description">Keep your money in safe place</h3> #}
+
+    <p>
+    <form action="{% url bank %}" method="post">
+        <input type="hidden" name="action_type" value="deposit">
+        $<input type="input" name="amount" value="{{ profile.cash|INT }}" size="8"/>
+        <input type="submit" value="{% trans 'Deposit' %}"/>
+    </form>
+    </p>
+
+    <p>
+        <b>{% trans 'in deposit' %}</b>: ${{ profile.cash_in_bank|intcomma }}
+    <form action="{% url bank %}" method="post">
+        <input type="hidden" name="action_type" value="withdraw">
+        $<input type="input" name="amount" value="{{ profile.cash_in_bank|INT }}" size="8"/>
+        <input type="submit" value="{% trans 'Withdraw' %}"/>
+    </form>
+    </p>
+
+{% endblock %}

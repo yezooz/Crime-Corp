@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans 'Bribe police officer' %}{% endblock %}
+
+{% block content %}
+    <h1>{% trans 'Bribe police officer' %}</h1>
+    <h3 class="description">
+        {% trans 'This corrupted bastard wants' %} {{ settings.LOW_HEAT_CREDITS }} {% trans 'credits to leave you alone and low down your heat level.' %}
+        <p>
+
+        <form action="{% url prison %}" method="post">
+            <input type="hidden" name="action_type" value="low_heat"/>
+            <input type="submit" value="{% trans 'Pay' %}"/>
+        </form>
+        </p>
+    </h3>
+    <img src="{{ MEDIA_URL }}images/prison.png"/>
+
+{% endblock %}

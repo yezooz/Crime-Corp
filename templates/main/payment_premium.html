@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans 'Payments' %}{% endblock %}
+
+{% block content %}
+
+    {# <p>Select your country: #}
+    {# <select name="country" id="country" onchange="" size="1"> #}
+    {# 	{% for country in countries %} #}
+    {# 		<option value="{{ country.code }}" {% ifequal country.code pref_lang %}selected="selected"{% endifequal %}>{{ country.name_en }}</option> #}
+    {# 	{% endfor %} #}
+    {# </select> #}
+    {# </p> #}
+
+    {% ifequal LANGUAGE_CODE 'pl' %}
+        <h3 class="description">Wesprzyj grę</h3>
+        <p style="font-size: 12px;">
+            Aby przekszatłcić swoje konto ...
+        </p>
+        <p style="font-size: 12px;">
+            W odpowiedzi otrzymasz kod, który wpisz poniżej:
+        </p>
+        <form action="{% url payment %}" method="post">
+            <label for="code">Podaj kod</label><input type="text" name="code" value="" size="6"/>
+            <input type="submit" value="Sprawdź">
+        </form>
+    {% endifequal %}
+
+{% endblock %}

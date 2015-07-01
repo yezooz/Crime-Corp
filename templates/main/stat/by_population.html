@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load common humanize i18n %}
+{% block title %}{% trans 'Leaderboard' %}{% endblock %}
+
+{% block content %}
+<h1>{% trans 'Leaderboard' %}</h1>
+<table class="data" style="width: 300px;">
+    <thead>
+    <tr>
+        <th style="width: 5%">&nbsp;</th>
+        <th style="width: 20%">{% trans 'Name' %}</th>
+        <th>{% trans 'Population' %}</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for item in items %}
+        <tr class="{% cycle '' 'odd' %}"
+            {% ifequal item request.engine.user.profile %}style="background-color: #DDD"{% endifequal %}>
+            <td class="name">{{ page_no|MINUS:1|TIMES:50|PLUS:forloop.counter|INT }}</td>
+            <td class="name"><b><a href="{% url profile item.username %}">{{ item.username }}</a></b></td>
+            <td style="text-align: center">{{ item.city_population|INT|intcomma }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<p style="font-size: 18px;">{% trans 'Page' %}:
+    {% for num in page.page_range %}
+    {% if not num %} ...
+    {% else %}
+    {% ifequal num page_no %}
+    <b>{{ num }}</b>
+    {% else %}
+    <a href="{% url stats_by_population num %}">{{ num }}</a>
+    {% endifequal %}
+    {% endif %}
+    {% endfor %}
+</p>
+{% endblock %}

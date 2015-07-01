@@ -1,0 +1,37 @@
+{% load i18n %}
+<div class="ajaxInner">
+    <a href="javascript:void(0);"
+       onclick="$('#ajax').load('{% url city_units_move %}');">{% trans 'back to list' %}</a> &raquo; {{ city }}
+
+    <h3>{% trans "Select how many of units you'd like to move from" %} <b>{{ city.name }}</b> {% trans "to" %}
+        <b>{{ request.engine.city.city_map.name }}</b>.</h3>
+
+    {% if messages %}
+        <div class="info">
+            {% for message in messages %}
+                {{ message|safe }}<br style="clear: both"/>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <form action="{% url city_units_move city.id %}" method="post">
+        <ul class="myUnits">
+            {% for unit_id, unit in units.items %}
+                <li>
+                    <p class="name">{{ unit.0 }}</p>
+
+                    <p class="attack">{% trans 'ATTACK' %}: <b>{{ unit.1 }}</b></p>
+
+                    <p class="defense">{% trans 'DEFENSE' %}: <b>{{ unit.2 }}</b></p>
+
+                    <p><input type="text" name="unit_{{ unit_id }}" value="0" size="2"/> {% trans 'of' %}
+                        <b>{{ unit.3 }}</b></p>
+                </li>
+            {% endfor %}
+        </ul>
+
+        <input type="hidden" name="city_id" value="{{ city.id }}"/>
+        <input type="hidden" name="action_type" value="move_units"/>
+        <input type="submit" value="{% trans 'SEND UNITS' %}"/>
+    </form>
+</div>

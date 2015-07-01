@@ -1,0 +1,352 @@
+{% load common humanize i18n modules %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+    <meta name="author" content=""/>
+    <meta name="keywords" content=""/>
+    <meta name="description" content=""/>
+    <meta name="robots" content="all"/>
+    <link rel="icon" type="image/icon" href="{{ MEDIA_URL }}images/favicon.ico"/>
+    <title>BETA --- Crime Corp: {% block title %}{% trans 'your criminal identity' %}{% endblock %}</title>
+    {% if sqldebug %}
+        <script src="{{ MEDIA_URL }}js/jquery-1.3.2.js" type="text/javascript"></script>
+    {% else %}
+        <script src="http://www.google.com/jsapi" type="text/javascript"></script>
+        <script type="text/javascript">
+            google.load("jquery", "1.3.2");
+            google.setOnLoadCallback(function () {
+                $(function () {
+                    Engine.init();
+                    pDates();
+                    imagePreview();
+                });
+            });
+        </script>
+    {% endif %}
+
+    {% ifequal LANGUAGE_CODE 'pl' %}
+        <script src="{{ MEDIA_URL }}js/common_pl.js" type="text/javascript"></script>
+        {% else %}
+        <script src="{{ MEDIA_URL }}js/common_en.js" type="text/javascript"></script>
+    {% endifequal %}
+    <script src="{{ MEDIA_URL }}js/engine.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ MEDIA_URL }}css/common.css"/>
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ MEDIA_URL }}css/index.css"/>
+    {% block head %}{% endblock %}
+</head>
+
+<body>
+<div id="notify"></div>
+<div id="top">
+    {% ifequal request.engine.pref_lang 'pl' %}<a href="http://crimecorp.blip.pl" target="_blank">blip{% else %}
+        <a href="http://twitter.com/crimecorp/" target="_blank">twitter{% endifequal %}&nbsp;&raquo;</a>
+</div>
+<div id="header">
+    <div style="float: right; position: absolute; left: 600px; top: 25px;">
+        <form action="/i18n/setlang/" method="post">
+            <div>
+                <select name="language">
+                    <option value="en"
+                            style="background:url('{{ MEDIA_URL }}images/flags/png/us.png') no-repeat left; padding-left: 23px;"
+                            {% ifequal request.engine.pref_lang 'pl' %}selected="selected"{% endifequal %}>{% trans 'english' %}</option>
+                    <option value="pl"
+                            style="background:url('{{ MEDIA_URL }}images/flags/png/pl.png') no-repeat left; padding-left: 23px;"
+                            {% ifequal request.engine.pref_lang 'en' %}selected="selected"{% endifequal %}>{% trans 'polish' %}</option>
+                </select>
+                <input type="submit" value="{% trans 'change' %}"/>
+            </div>
+        </form>
+    </div>
+    <div class="logo"><a href="{% url home %}"><img src="{{ MEDIA_URL }}images/logo-1_beta_2.png" alt="Crime Corp"/></a>
+    </div>
+    <div class="right_box">
+        <div style="width: 65%; float: left;">
+            <table style="width: 100%">
+                <tr>
+                    <td colspan="2">
+                        <span style="font-size: 18px; font-weight: bold;"><a
+                                href="{% url profile request.engine.user.user %}">{{ request.engine.user.user }}</a></span>
+                        &nbsp;<span style="font-size: 10px;">(<a href="{% url profile_edit %}">{% trans 'edit' %}</a>/<a
+                            href="{% url city_enter request.engine.user.profile.default_city_id %}">{% trans 'my city' %}</a>
+                        {% if not request.engine.settings.IS_FRAME %} /
+                            <a href="{% url auth_logout %}">{% trans 'logout' %}</a>{% endif %})</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+				<span title="{% trans 'Your attack power is' %} {{ request.engine.user.profile.total_attack|intcomma }}"><span
+                        title="{% trans 'Attack' %}"
+                        class="attack">&nbsp;</span><b>{{ request.engine.user.profile.total_attack|PRITIFY }}</b>
+				</span>
+                    </td>
+                    <td>
+				<span title="${{ request.engine.user.profile.cash|intcomma }}"><span title="{% trans 'Cash' %}"
+                                                                                     class="cash">&nbsp;</span><b>${{ request.engine.user.profile.cash|PRITIFY }}</b>
+				</span>
+                        <span>(<a href="{% url bank %}">{% trans 'bank' %}</a>)</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+				<span title="{% trans 'Your defense power is' %} {{ request.engine.user.profile.total_defense|intcomma }}"><span
+                        title="{% trans 'Defense' %}"
+                        class="defense">&nbsp;</span><b>{{ request.engine.user.profile.total_defense|PRITIFY }}</b>
+				</span>
+                    </td>
+                    <td>
+                        <span title="{% trans 'Special items or features costs credits' %}"><span
+                                title="{% trans 'Credits' %}"
+                                class="credit">&nbsp;</span><b>{{ request.engine.user.profile.credit|intcomma }}</b> (<a
+                                href="{% url payment %}">{% trans 'get more' %}</a>)</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+				<span title="{% trans 'Your respect level is' %} {{ request.engine.user.profile.total_respect|intcomma }}"><span
+                        title="{% trans 'Respect' %}"
+                        class="respect">&nbsp;</span><b>{{ request.engine.user.profile.total_respect|PRITIFY }}</b>
+				</span>
+                    </td>
+                    <td>
+                        <span>&nbsp;</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+				<span title="{% trans 'As you commit crimes, your heat level increases, indicating how badly cops want to take you down. To low it down get some rest or bribe the cops.' %}"><span
+                        title="{% trans 'Heat' %}" class="heat">&nbsp;</span><b
+                        {% if request.engine.user.profile.heat|DIV:request.engine.user.profile.max_heat|LTE:0.4 %}style="color: green"
+                        {% else %}{% if request.engine.user.profile.heat|DIV:request.engine.user.profile.max_heat|LTE:0.7 %}style="color: orange"
+                        {% else %}style="color: red"
+                        {% endif %}{% endif %}>{{ request.engine.user.profile.heat }}</b>/{{ request.engine.user.profile.max_heat }}
+				</span>
+                        <span title="{% trans 'Bribe the cops and low down your heat level' %}">(<a
+                                href="{% url prison %}">{% trans 'bribe' %}</a>)</span>
+                    </td>
+                    <td>
+                        <span><a href="{% url msg_inbox %}" class="nounder">{% trans 'Unread' %}:
+                            <b>{{ request.engine.msg.unread_messages }}</b> <a href="javascript:void(0)"
+                                                                               onclick="Engine.msg_box_toggle(); return false;"
+                                                                               class="msg_link nounder">
+                                &nbsp;</a></span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div style="width: 35%; float: right;">
+            <table style="width: 100%">
+                <tr>
+                    <td>
+                        <span style="font-size: 12px; line-height: 1.7em">{% trans 'current city' %}:</span><span>{% other_cities request.engine %}</span><br/>
+                        <span style="font-size: 16px; font-weight: bold;"><a
+                                href="#">{{ request.engine.city.city_map.name }}</a></span>
+                    </td>
+                </tr>
+                {# <tr> #}
+                {# 	<td> #}
+                {# 		<span title="Utrzymuj populację swojego miasta na wysokim poziomie co spowoduje zwiększenie liczby biznesów do przejęcia oraz zwięszenia zapotrzebowania na dragi"><span class="city">&nbsp;</span><b>{{ request.engine.city.city_map.population|PRITIFY }}</b> #}
+                {# 		</span> #}
+                {# 	</td> #}
+                {# </tr> #}
+                <tr>
+                    <td>
+                        <span title="">{% trans 'ATT' %}:&nbsp;<b>{{ request.engine.city.get_sums.0|PRITIFY }}</b></span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span title="">{% trans 'DEF' %}:&nbsp;<b>{{ request.engine.city.get_sums.1|PRITIFY }}</b></span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <a href="javascript:void(0)"
+                           onclick="$('#ajax').load('{% url city_units_move %}');">{% trans 'move more units' %}</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+<div id="container">
+
+    <div class="menu">
+        <ul>
+            <li><a href="/">{% trans 'Home' %}</a></li>
+            <li><a href="{% url city_map %}">{% trans 'City' %}<!--[if IE 7]><!--></a><!--<![endif]-->
+                <!--[if lte IE 6]><table><tr><td><![endif]-->
+                <ul>
+                    <li><a href="{% url city_map %}">{% trans 'Map' %}</a></li>
+                    <li><a href="{% url city_units %}">{% trans 'Units' %}</a></li>
+                    <li><a href="{% url tribute %}">{% trans 'Tributes' %}</a></li>
+                    <li><a href="{% url hooker %}">{% trans 'Hookers' %}</a></li>
+                    {# <li><a href="{% url drug %}">{% trans 'Buy or Sell Drugs' %}</a></li> #}
+                    {# <li><a href="#"><hr/></a></li> #}
+                    {# <li><a href="{% url production %}">{% trans 'Production' %}</a></li> #}
+                </ul>
+                <!--[if lte IE 6]></td></tr></table></a><![endif]-->
+            </li>
+            <li><a href="{% url robbery %}">{% trans 'Business' %}<!--[if IE 7]><!--></a><!--<![endif]-->
+                <!--[if lte IE 6]><table><tr><td><![endif]-->
+                <ul>
+                    <li><a href="{% url robbery %}">{% trans 'Robbery' %}</a></li>
+                    {# {% ifequal request.engine.user.profile.special_jobs_count 0  %} #}
+                    {# 	<li><a href="{% url special_job %}">Special (0)</a></li> #}
+                    {# {% else %} #}
+                    {# 	<li><a href="{% url special_job %}">Special (<span style="color: red;">{{ request.engine.user.profile.special_jobs_count }}</span>)</a></li> #}
+                    {# {% endifequal %} #}
+                    <li><a href="{% url auction %}">{% trans 'Auctions' %}</a></li>
+                    {# <li><a href="{% url market %}">{% trans 'Black market' %}</a></li> #}
+                    {# <li><a href="#">{% trans 'Resources' %}</a></li> #}
+                    {# <li><a href="/">{% trans 'Investments' %}</a></li> #}
+                </ul>
+                <!--[if lte IE 6]></td></tr></table></a><![endif]-->
+            </li>
+
+            <li><a href="{% url shop %}">{% trans 'You' %}<!--[if IE 7]><!--></a><!--<![endif]-->
+                <!--[if lte IE 6]><table><tr><td><![endif]-->
+                <ul>
+                    <li><a href="{% url shop %}">{% trans 'Inventory' %}</a></li>
+                    <li><a href="{% url skills %}">{% trans 'Skills' %}</a></li>
+                    <li><a href="{% url garage %}">{% trans 'Garage' %}</a></li>
+                    <li><a href="{% url payment %}">{% trans 'Credits' %}</a></li>
+                </ul>
+                <!--[if lte IE 6]></td></tr></table></a><![endif]-->
+            </li>
+
+            <li><a href="{% url gang %}">{% trans 'Gang' %}<!--[if IE 7]><!--></a><!--<![endif]-->
+                <!--[if lte IE 6]><table><tr><td><![endif]-->
+                <ul>
+                    {# <li><a href="{% url gang %}">{% trans 'Gang' %}</a></li> #}
+                    {# <li><a href="{% url family_invite %}">{% trans 'Invite' %}</a></li> #}
+                </ul>
+                <!--[if lte IE 6]></td></tr></table></a><![endif]-->
+            </li>
+
+            <li><a href="{% url stats_by_respect %}">{% trans 'Others' %}<!--[if IE 7]><!--></a><!--<![endif]-->
+                <!--[if lte IE 6]><table><tr><td><![endif]-->
+                <ul>
+                    <li><a href="{% url msg_inbox %}">{% trans 'Messages' %}
+                        ({{ request.engine.msg.unread_messages }})</a></li>
+                    <li><a href="{% url stats_by_respect %}">{% trans 'Stats' %}</a></li>
+                </ul>
+                <!--[if lte IE 6]></td></tr></table></a><![endif]-->
+            </li>
+        </ul>
+    </div>
+
+    <div id="msg_box" class="msg_box">
+        <div style="width: 100%">
+            <div style="width: 80%; line-height: 1.8em; float: left;">{% trans 'Put you message here' %}:</div>
+            <div style="width: 15%; line-height: 1.8em; float: left;" id="status_left">140</div>
+        </div>
+        <br style="clear: both"/>
+
+        <div style="width: 100%">
+            <div style="width: 80%; float: left;">
+                <form id="msg_form" action="{% url msg_send %}" method="post">
+                    <textarea autocomplete="off" accesskey="u" name="status" id="status" rows="2" cols="40"></textarea>
+                </form>
+            </div>
+            <div style="float: left; padding-left: 10px; padding-top: 7px;">
+                <div class="plus_btn" style="font-size: 12px;"
+                     onclick="Engine.msg_box_submit()">{% trans 'send' %}</div>
+            </div>
+            <br style="clear: both"/>
+            <span class="msg_details">{% blocktrans %}Usage: choose recepient(s) by prepending username with "@", ie.
+                "@gangster_1 some message".{% endblocktrans %}</span>
+        </div>
+        <br style="clear: both"/>
+    </div>
+
+    {% if messages %}
+        <div class="info">
+            {% for message in messages %}
+                {{ message|safe }}<br style="clear: both"/>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div id="content">
+        <div id="ajax"></div>
+        {% block content %}{% endblock %}
+    </div>
+    {# <div id="copyright">Copyright © 2008-2009 Crime Corp</div> #}
+
+    {% if not sqldebug %}
+        <iframe src="http://ad110.myofferpal.com/ee7bed3df38c60c482136adb1a7445af/ibanner.action?snuid={{ request.engine.user.user.id }}"
+                frameborder="0" width="700" height="100" scrolling="no"></iframe>
+        <div id="footer"></div>
+    {% endif %}
+
+    {% if sqldebug %}
+        <div id="debug">
+            <p>
+                {{ sqldebug.queries.count }} Quer{{ sqldebug.queries|pluralize:"y,ies" }}, {{ sqldebug.time }} seconds
+                {% ifnotequal sql_queries|length 0 %}
+                    (<span style="cursor: pointer;"
+                           onclick="var s=document.getElementById('debugQueryTable').style;s.display=s.display=='none'?'':'none';this.innerHTML=this.innerHTML=='Show'?'Hide':'Show';">Show</span>
+                    )
+                {% endifnotequal %}
+            </p>
+            <table id="debugQueryTable" style="display: none;">
+                <col width="1"></col>
+                <col></col>
+                <col width="1"></col>
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">SQL</th>
+                    <th scope="col">Time</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for query in sqldebug.queries %}
+                    <tr class="{% cycle odd,even %}">
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ query }}</td>
+                        <td>{{ query.time }}</td>
+                    </tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+{% if not sqldebug %}
+    {# <div style="position: absolute; left: 760px; top: 20px"> #}
+    {# 	<script type="text/javascript"><!-- #}
+    {# 	google_ad_client = "pub-9431897319272944"; #}
+    {# 	/* 160x600, CC */ #}
+    {# 	google_ad_slot = "5816505847"; #}
+    {# 	google_ad_width = 160; #}
+    {# 	google_ad_height = 600; #}
+    {# 	//--> #}
+    {# 	</script> #}
+    {# 	<script type="text/javascript" #}
+    {# 	src="http://pagead2.googlesyndication.com/pagead/show_ads.js"> #}
+    {# 	</script> #}
+    {# </div> #}
+
+    <script type="text/javascript">
+        var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+        document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+    </script>
+    <script type="text/javascript">
+        try {
+            var pageTracker = _gat._getTracker("UA-317705-12");
+            pageTracker._trackPageview();
+        } catch (err) {
+        }</script>
+
+    <script type="text/javascript" src="http://include.reinvigorate.net/re_.js"></script>
+    <script type="text/javascript">
+        try {
+            reinvigorate.track("7e69s-59t173o642");
+        } catch (err) {
+        }
+    </script>
+
+{% endif %}
+</body>
+</html>

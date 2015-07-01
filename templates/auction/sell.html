@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load common i18n humanize %}
+{% block title %}{% trans 'Selling item on auction' %}{% endblock %}
+
+{% block head %}
+    <script src="{{ MEDIA_URL }}js/jquery.rating.pack.js" type="text/javascript"></script>
+    <link href="{{ MEDIA_URL }}css/jquery.rating.css" type="text/css" rel="stylesheet"/>
+{% endblock %}
+
+{% block content %}
+    <p style="font-size: 12px; padding:0; margin:0; padding-top: 10px;"><a
+            href="{% url garage %}">&laquo; {% trans 'back to garage' %}</a></p>
+
+    <div style="display:block; float:none; margin:0 0 1em; overflow:hidden; position:static; width:auto;">
+        <div style="width: 70%; display: block; float: left; margin-left: 0%; font-size: 12px;">
+            <form action="{% url auction_sell item_type item_id %}" method="post">
+                <h2>{{ item.name }}</h2>
+                <table>
+                    <tbody>
+                    <tr>
+                        <td>{% trans 'Duration' %}:</td>
+                        <td>
+                            {{ form.duration }}
+                            {% if form.duration.errors %}
+                                <em style="color: red;">{{ form.duration.errors|join:", " }}</em>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>{% trans 'Start price' %}:</td>
+                        <td>
+                            ${{ form.start_price }} <em style="font-size: 10px;">({% trans 'suggested' %}
+                            <b>${{ item.price|intcomma }}</b>)</em>
+                            {% if form.start_price.errors %}
+                                <em style="color: red;">{{ form.start_price.errors|join:", " }}</em>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <center><input type="submit" value="{% trans 'SELL' %}"/></center>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">&nbsp;</td>
+                    </tr>
+                    {# <tr> #}
+                    {# 	<td>{% trans 'Look' %}:</td> #}
+                    {# 	<td style="padding-top: 7px; padding-left: 12px;"> #}
+                    {# 		<div id="star-0" class="rating"></div> #}
+                    {# 		<script type="text/javascript">$('#star-0').rating(null, {maxvalue:5, curvalue:{{ details.look|DIV:2 }}});</script> #}
+                    {# 	</td> #}
+                    {# </tr> #}
+                    <td>{% trans 'Respect' %}:</td>
+                    <td><span class="respect">+<b>{{ item.respect }}</b></span></td>
+                    </tr>
+                    <tr>
+                        <td>{% trans 'Year' %}:</td>
+                        <td><b>{{ details.year }}</b></td>
+                    </tr>
+                    <tr>
+                        <td>{% trans 'Engine' %}:</td>
+                        <td><b>{{ details.engine }}</b> / <b>{{ details.hp }}</b> {% trans 'HP' %}</td>
+                    </tr>
+                    </tbody>
+                </table>
+        </div>
+    </div>
+    <img src="{{ MEDIA_URL }}{{ item.image_filename }}"/>
+
+{% endblock %}

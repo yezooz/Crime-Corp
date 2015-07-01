@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% load common modules i18n %}
+
+{% block content %}
+
+    {% if request.engine.stream.general_news %}
+
+        <div class="recentNews">
+            <h2>{% trans "Breaking news" %}</h2>
+            {% for news in request.engine.stream.general_news %}
+                <div class="recentNewsArticle">
+                    <h4 class="newsArticleHead">{{ news.title }}</h4>
+                    <span class="newsArticleContent">{{ news.content_short }}</span>
+                </div>
+                <br style="clear: both"/>
+            {% endfor %}
+        </div>
+
+    {% endif %}
+
+    <div style="width: 100%">
+        <div class="recentStream">
+            {% if request.engine.stream.city_wall %}
+                <h2>{% trans "What's happening in this city" %}</h2>
+                {% for news in request.engine.stream.city_wall %}
+                    <div class="recentStreamArticle">
+                        <h4 class="streamArticleHead">{{ news.created_at|timestr }}</h4>
+                        <span class="streamArticleContent">{{ request.engine.stream.TXT|KEY:news.source|translate:news.title|safe }}
+                            {% if request.engine.city.in_my_city %}
+                                <a href="{% url wall_stream_delete news.id %}" title="{% trans 'Delete information' %}"
+                                   class="delete">&nbsp;</a>{% endif %}</span>
+                    </div>
+                    {% cycle '' '<br style="clear: left"/>' %}
+                {% endfor %}
+                <br style="clear: both"/>
+
+            {% endif %}
+            {% if request.engine.stream.user_news %}
+
+                <h2>{% trans "Your news" %}</h2>
+                {% for news in request.engine.stream.user_news %}
+                    <div class="recentStreamArticle">
+                        <h4 class="streamArticleHead">{{ news.created_at|timestr }}</h4>
+                        <span class="streamArticleContent">{{ request.engine.stream.TXT|KEY:news.source|translate:news.title|safe }} <a
+                                href="{% url stream_delete news.id %}" title="{% trans 'Delete information' %}"
+                                class="delete">&nbsp;</a></span>
+                    </div>
+                    {% cycle '' '<br style="clear: left"/>' %}
+                {% endfor %}
+
+            {% endif %}
+        </div>
+
+        <div class="rightWing">
+            {% if items %}
+                <h2>{% trans 'Accept invites' %}</h2>
+                <div class="rightWingBox">
+                    {# <form action="{% url family_invite %}" method="post"> #}
+                    {# 	<input type="submit" name="accept_all" value="{% trans 'Accept All' %}"/> #}
+                    {# </form> #}
+
+                    {% for item in items %}
+                        <h4 class="rightWingBoxHead">{{ item.user }}</h4>
+                        <p>
+                            <span title="{% trans 'Attack' %}"
+                                  class="attack">&nbsp;</span><b>{{ item.attack|PRITIFY }}</b></span><br/>
+                            <span title="{% trans 'Defense' %}"
+                                  class="defense">&nbsp;</span><b>{{ item.defense|PRITIFY }}</b></span><br/>
+                            <span title="{% trans 'Respect' %}"
+                                  class="respect">&nbsp;</span><b>{{ item.respect|PRITIFY }}</b></span><br/>
+                        <form action="{% url family_invite %}" method="post"
+                              style="border-bottom: 1px dotted #cbcaca; padding-bottom: 10px;">
+                            <input type="hidden" name="action_type" value="accept"/>
+                            <input type="hidden" name="friend_id" value="{{ item.user.id }}"/>
+                            <input type="submit" name="accept" value="{% trans 'Accept' %}"/> /
+                            <input type="submit" name="decline" value="{% trans 'Ignore' %}"/>
+                        </form>
+                        </p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {# <h2>{% trans 'Redeem Code' %}</h2> #}
+            {# <div class="rightWingBox"> #}
+            {# 	<p> #}
+            {# 		<form action="" method="post"> #}
+            {# 			<input type="text" size="6"/> #}
+            {# 			<input type="submit" value="{% trans 'Use code' %}"/> #}
+            {# 		</form> #}
+            {# 		<span class="question">{% trans 'How to get codes?' %}</span> #}
+            {# 	</p> #}
+            {# </div> #}
+
+
+            {% moving_units_list request.engine %}
+        </div>
+    </div>
+
+    <br/><br/>
+
+    <img src="{{ MEDIA_URL }}/images/buildings_1.png" alt="" style="margin-left: -60px;"/>
+
+{% endblock %}

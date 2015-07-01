@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% load common map i18n humanize %}
+
+{% block head %}
+    <script src="{{ MEDIA_URL }}js/date/date.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="{{ MEDIA_URL }}css/module/city/common.css" type="text/css" media="screen"
+          charset="utf-8"/>
+    <script src="{{ MEDIA_URL }}js/module/city.js" type="text/javascript"></script>
+{% endblock %}
+
+{% block content %}
+    <h1 title="{% trans 'Production' %}"></h1>
+
+    <div>
+        <div class="twoCol left">
+            {% if queue %}
+                <div class="niceBoxOut">
+                    <div class="niceBox">
+                        <h2>Building Queue</h2>
+
+                        <ul class="queuedUnits">
+                            {% for item in queue %}
+                                <li>
+                                    {% if forloop.first %}
+                                        <dl class="queuedUnitsInner first">
+                                            <dd class="stat_lo title"><b>{{ item.name|capfirst }}</b></dd>
+                                            <dd class="stat_lo amount">{% trans 'UNITS' %}
+                                                <b>{{ item.amount|intcomma }}</b></dd>
+                                            <dd class="stat_lo time">{% trans 'TIME' %} <b
+                                                    id="countdown">{{ item.ready_at }}</b></dd>
+                                            <script type="text/javascript">
+                                                timer = new Timer();
+                                                timer.init($('#countdown'));
+                                            </script>
+                                        </dl>
+                                    {% else %}
+                                        {% ifequal forloop.counter0 1 %}
+                                            <div style="font-size:20px;font-weight:bold;text-align:center;">{% trans 'next' %}</div>
+                                        {% endifequal %}
+                                        <dl class="queuedUnitsInner">
+                                            <dd class="stat_lo title"><b>{{ item.name|capfirst }}</b></dd>
+                                            <dd class="stat_lo amount">{% trans 'UNITS' %}
+                                                <b>{{ item.amount|intcomma }}</b></dd>
+                                        </dl>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="niceBoxOut">
+                <div class="niceBox">
+                    <h2>{% trans 'Resources' %}</h2>
+                    <ul class="resources">
+                        {% for item in items %}
+                            <li {% if not forloop.last %}class="in_queue"{% endif %}>
+                                <dl class="resourcesInner">
+                                    <dd class="stat_lo title"><b>{{ item.name|capfirst }}</b></dd>
+                                    <dd class="stat_lo cost" id="cost_{{ item.name }}">{% trans 'COST' %}
+                                        <b>${{ item.base_price|intcomma }}</b></dd>
+                                    <dd class="stat_lo time" id="time_{{ item.name }}">{% trans 'TIME' %}
+                                        <b>{{ item.base_speed|to_time }}</b></dd>
+                                    <dd>
+                                        <form action="{% url production %}" method="post">
+                                            <input type="text" name="amount" value="0" size="4"
+                                                   id="build_{{ item.name }}"
+                                                   onkeyup="update_hint(this, {{ item.base_price }}, {{ item.base_speed }});"/> {% trans 'units' %}
+                                            <input type="hidden" name="item_type" value="{{ item.type }}"/>
+                                            <input type="hidden" name="item_name" value="{{ item.name }}"/>
+                                            <input type="hidden" name="action_type" value="produce"/>
+                                            <input type="submit" value="
+                                                    {{ request.engine.settings.PRODUCT_TYPE_ACTION_NAMES|KEY:item.type|upper }}"/>
+                                        </form>
+                                    </dd>
+                                </dl>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="twoCol right">
+            <div class="niceBoxOut">
+                <div class="niceBox">
+                    <h2>{% trans 'My resources' %}</h2>
+                    <ul class="myUnits">
+                        {% for unit in my_units %}
+                            <li {% if not forloop.last %}class="in_queue"{% endif %}>
+                                <dl class="myUnitsInner">
+                                    <dd class="attack">x <b>{{ unit.group }}</b></dd>
+                                    <dd class="attack">{% trans 'ATTACK' %} <b>{{ unit.attack|intcomma }}</b></dd>
+                                    <dd class="defense">{% trans 'DEFENSE' %} <b>{{ unit.defense|intcomma }}</b></dd>
+                                </dl>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <br style="clear: both;"/>
+
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends "admin/base_site.html" %}
+{% load adminmedia admin_list i18n common %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <script src="http://www.google.com/jsapi"></script>
+    <script type="text/javascript" charset="utf-8">google.load("jquery", "1.4.0");</script>
+    <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}admin/css/dashboard.css"/>
+{% endblock %}
+
+{% block content %}
+
+    <div id="content-main">
+        <h1>Intranet</h1>
+
+        <br/>
+
+        <div class="module">
+            <h2>Moduły</h2>
+            <pre><b><a href="{% url intranet_jobs %}">Zadania</a></b></pre>
+            <pre><b><a href="{% url intranet_items %}">Przedmioty</a></b></pre>
+        </div>
+
+        <div class="module">
+            <h2>Rejestracje</h2>
+
+            <div style="float: left; width: 15%;">
+                <pre>WWW</pre>
+                {% for usr in data.user_by_day_www_t %}
+                    <p>{{ usr.0 }} ({{ usr.1 }})</p>
+                {% endfor %}
+            </div>
+
+            {# <div style="float: left; width: 15%;"> #}
+            {# {% for usr in data.user_by_day_www %} #}
+            {# 	<p>{{ usr }}</p> #}
+            {# {% endfor %} #}
+            {# </div> #}
+
+            <div style="float: left; width: 15%;">
+                <pre>FB</pre>
+                {% for usr in data.user_by_day_fb_t %}
+                    <p>{{ usr.0 }} ({{ usr.1 }})</p>
+                {% endfor %}
+            </div>
+
+            {# <div style="float: left; width: 15%;"> #}
+            {# {% for usr in data.user_by_day_fb %} #}
+            {# 	<p>{{ usr }}</p> #}
+            {# {% endfor %} #}
+            {# </div> #}
+            <br style="clear: both"/>
+        </div>
+        <br/>
+
+        <div class="module">
+            <h2>Płatności</h2>
+            <pre>Ostatnie 24h: <b>{% if data.pay_1day %}${{ data.pay_1day|DIV:10 }}{% else %}0{% endif %}</b></pre>
+            <pre>Ostatnie 7 dni: <b>{% if data.pay_7day %}${{ data.pay_7day|DIV:10 }}{% else %}0{% endif %}</b></pre>
+            <pre>Ostatnie 30 dni: <b>{% if data.pay_30day %}${{ data.pay_30day|DIV:10 }}{% else %}0{% endif %}</b></pre>
+        </div>
+        <br/>
+
+        <div class="module">
+            <h2>Aukcje</h2>
+            <pre>Trwających: {{ data.auction_pending_dealer }} + <b>{{ data.auction_pending_not_dealer }}</b></pre>
+            <pre>Kończących w 3 dni: {{ data.auction_end_3day_dealer }} + <b>{{ data.auction_end_3day_not_dealer }}</b></pre>
+            {# <pre><a href="/admin/stats/add_cars/">Wygeneruj auta dla dealera &raquo;</a></pre> #}
+            {# <pre><a href="#">Wystaw aukcje &raquo;</a></pre> #}
+            <pre><a href="{% url intranet_cars %}">Przenieś auta z gta &raquo;</a></pre>
+        </div>
+        <br/>
+
+        <div class="module">
+            <h2>Social</h2>
+            <script type="text/javascript" charset="utf-8">
+                var tweetCounter = function (t) {
+                    $('#counter').text(t.value.length);
+                    if (t.value.length > 130)
+                        $('#counter').css('color', 'red');
+                    else
+                        $('#counter').css('color', 'black');
+                };
+            </script>
+            <form action="{% url admin_social %}" method="post">
+                <pre><input type="text" name="msg" size="110" value="" onkeyup="tweetCounter(this);"/>&nbsp;<input
+                        type="submit" value="Wyślij &raquo;"/>&nbsp;<span id="counter"></span></pre>
+                <pre><input type="checkbox" name="to_twitter"/> twitter &raquo; <input type="checkbox" name="to_blip"
+                                                                                       value=""/> blip &raquo; <input
+                        type="checkbox" name="to_users_pl"/> users.pl &raquo; <input type="checkbox"
+                                                                                     name="to_users_en"/> users.en</pre>
+        </div>
+        <br/>
+
+        <div class="module">
+            <h2>Kody</h2>
+            {% if last_generated_codes %}
+                <pre>{{ last_generated_codes|safe }}</pre>
+            {% endif %}
+            <p>
+
+            <form action="/admin/stats/gen_promo_code/" method="post">
+                <pre><label for="how_many">How many?</label> <input type="text" name="how_many" value="0"
+                                                                    size="2"/></pre>
+                <pre><label for="value">Value?</label> <input type="text" name="value" value="0" size="2"/></pre>
+                <pre><label for="valid_for_days">Valid for?</label> <input type="text" name="valid_for_days" value="0"
+                                                                           size="2"/></pre>
+                <pre><input type="submit" value="Generate"></pre>
+            </form>
+            </p>
+        </div>
+    </div>
+{% endblock %}

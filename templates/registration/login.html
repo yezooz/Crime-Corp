@@ -1,0 +1,105 @@
+{% extends "registration/base.html" %}
+
+{% block content %}
+    <form method="post" action="?next={{ next|default:"/" }}">
+        <div class="blockTitle">
+            <h3>Log in</h3>
+        </div>
+        <div class="login">
+            {% if form.errors %}
+                <p class="alert error">Please correct the errors below:</p>
+            {% endif %}
+            <table>
+                <colgroup>
+                    <col class="description"/>
+                    <col class="field"/>
+                </colgroup>
+                <tbody>
+                <tr>
+                    <th><label for="id_username">Username:</label></th>
+                    <td>
+                        {% if form.username.errors %}
+                            <p class="alert error">{{ form.username.errors|join:", " }}</p>
+                        {% endif %}
+                        {{ form.username }}
+                    </td>
+                </tr>
+                <tr>
+                    <th><label for="id_password">Password:</label></th>
+                    <td>
+                        {% if form.password.errors %}
+                            <p class="alert error">{{ form.password.errors|join:", " }}</p>
+                        {% endif %}
+                        {{ form.password }}
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <div id="submitter" class="btnSubmit">
+                <hr class="objSeparator"/>
+                <input type="submit" value="Log in">
+            </div>
+        </div>
+    </form>
+
+    <form method="post" action="{% url auth_login %}">
+        <div class="blockTitle">
+            <h3>Create an account</h3>
+        </div>
+        <div class="leftBlock">
+            {% if form.errors %}
+                <p class="errors">Please correct the errors below: {{ form.non_field_errors }}</p>
+            {% endif %}
+            <div id="additional">
+                <table>
+                    <colgroup>
+                        <col class="description"/>
+                        <col class="field"/>
+                    </colgroup>
+                    <tbody>
+                    <tr>
+                        <th><label for="id_username">Username:</label></th>
+                        <td>
+                            {% if form.username.errors %}
+                                <p class="errors">{{ form.username.errors.as_text }}</p>
+                            {% endif %}
+                            {{ form.username }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="id_email">Email address:</label></th>
+                        <td>
+                            {% if form.email.errors %}
+                                <p class="errors">{{ form.email.errors.as_text }}</p>
+                            {% endif %}
+                            {{ form.email }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="id_password1">Password:</label></th>
+                        <td>
+                            {% if form.password1.errors %}
+                                <p class="errors">{{ form.password1.errors.as_text }}</p>
+                            {% endif %}
+                            {{ form.password1 }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="id_password2">Password again:</label></th>
+                        <td>
+                            {% if form.password2.errors %}
+                                <p class="errors">{{ form.password2.errors.as_text }}</p>
+                            {% endif %}
+                            {{ form.password2 }}
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div id="submitter" class="btnSubmit">
+            <hr class="objSeparator"/>
+            <input type="submit" name="submit" value="Register new account"/>
+        </div>
+    </form>
+{% endblock %}

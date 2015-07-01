@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% load common map i18n humanize %}
+
+{% block head %}
+    <script src="{{ MEDIA_URL }}js/date/date.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="{{ MEDIA_URL }}css/module/city/common.css" type="text/css" media="screen"
+          charset="utf-8"/>
+{% endblock %}
+
+{% block content %}
+    <h1 title="{% trans 'Units' %}"><img alt="{% trans 'Units' %}"
+                                         src="{{ MEDIA_URL }}images/capt_units_{{ request.engine.pref_lang }}.png"/>
+    </h1>
+
+    {% if queue %}
+        <h2>{% trans 'Units hiring queue' %} ({{ queue|length }}/3)</h2>
+        <table class="data" style="width: 400px;">
+            <thead>
+            <tr>
+                <th>{% trans 'Name' %}</th>
+                <th>{% trans 'Stats' %}</th>
+                <th>{% trans 'Build time' %}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for unit in queue %}
+                <tr class="{% cycle '' 'odd' %}">
+                    <td class="name"><b>{{ request.engine.city.UNIT|KEY:unit.name }}</b></td>
+                    <td>
+                        <b>{% trans 'ATTACK' %}</b> {{ unit.attack|intcomma }}<br/><b>{% trans 'DEFENSE' %}</b> {{ unit.defense|intcomma }}
+                    </td>
+                    {% if forloop.first %}
+                        <td>
+                            <span title="{% trans 'Build time' %}" class="time">&nbsp;</span><span
+                                id="countdown">{{ unit.ready_at }}</span>
+                            <script type="text/javascript">
+                                timer = new Timer();
+                                timer.init($('#countdown'));
+                            </script>
+                        </td>
+                    {% else %}
+                        <td><span title="{% trans 'Build time' %}"
+                                  class="time">&nbsp;</span>+{{ unit.time_to_build|to_time }}</td>
+                    {% endif %}
+                    <td><a href="{% url city_units_cancel forloop.counter0 %}"
+                           onclick="return confirm('{% trans 'Are you sure? No refund is provided.' %}');">{% trans 'cancel' %}</a>
+                    </td>
+                </tr>
+                </form>
+            {% endfor %}
+            </tbody>
+        </table>
+        <hr/>
+    {% endif %}
+
+    <h2>{% trans 'Hire' %} {% trans 'or' %} <a href="javascript:void(0)"
+                                               onclick="$('#ajax').load('{% url city_units_move %}');">{% trans 'move more units here' %}</a>
+    </h2>
+    <table class="data" style="width: 650px;">
+        <thead>
+        <tr>
+            <th>{% trans 'Name' %}</th>
+            <th>{% trans 'Stats' %}</th>
+            <th>{% trans 'Cost' %}</th>
+            <th>{% trans 'Build time' %}</th>
+            <th>{% trans 'Got' %}</th>
+            <th style="width: 120px;">&nbsp;</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for unit in all_units %}
+            <tr class="{% cycle '' 'odd' %}">
+                <td class="name"><b>{{ request.engine.city.UNIT|KEY:unit.name }}</b></td>
+                <td>
+                    <b>{% trans 'ATTACK' %}</b> {{ unit.attack|intcomma }}<br/><b>{% trans 'DEFENSE' %}</b> {{ unit.defense|intcomma }}
+                </td>
+                <td>
+                    <span title="{% trans 'Cash' %}" class="cash">&nbsp;<b>${{ unit.price|intcomma }}</b></span>
+                    {% ifnotequal unit.credit 0 %}
+                        &nbsp;+&nbsp;
+                        <span title="{% trans 'Credits' %}" class="credit">&nbsp;<b>{{ unit.credit }}</b></span>
+                    {% endifnotequal %}
+                </td>
+                <td><span title="{% trans 'Build time' %}" class="time">&nbsp;</span>{{ unit.time_to_build|to_time }}
+                </td>
+                <td>x<b style="font-size: 15px;">{{ my_units|KEY:unit.id|KEY:3|INT }}</b></td>
+                <td>
+                    <form action="{% url city_units %}" method="post" id="{{ unit.name }}_form">
+                        <input type="hidden" name="action_type" value="hire"/>
+                        <input type="hidden" name="action_id" value="{{ unit.id }}"/>
+                        {# <input type="submit" value="{% trans 'HIRE' %}" {% ifequal queue|length 3 %}disabled="disabled"{% endifequal %}/> #}
+                        <div class="plus_btn" onclick="$('#{{ unit.name }}_form').submit()">{% trans 'HIRE' %}</div>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <br style="clear: both;"/>
+
+{% endblock %}

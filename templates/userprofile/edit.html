@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% load common i18n %}
+{% block content %}
+
+    <div style="width: 100%">
+        <div style="width: 49%; float: left;">
+            <h3 class="description">
+                <span>{% trans 'Change contact methods' %}</span>
+
+                <div style="padding-left: 10px; padding-top: 5px;">
+                    <form method="post" action="{% url profile_edit %}">
+                        <table>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    <label for="id_im1">
+                                        {# <select name="im1_type"><option value="msn">MSN</option><option value="gtalk">GTalk</option><option value="aim">AIM</option><option value="gg">Gadu-Gadu</option></select> #}
+                                        {{ form_im.im1_type }}
+                                    </label>
+                                </td>
+                                <td>
+                                    {{ form_im.im1 }}
+                                    {% if form_im.im1.errors %}
+                                        <br/><em style="color: red;">{{ form_im.im1.errors|join:", " }}</em>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label for="id_im2">
+                                        {{ form_im.im2_type }}
+                                    </label>
+                                </td>
+                                <td>
+                                    {{ form_im.im2 }}
+                                    {% if form_im.im2.errors %}
+                                        <br/><em style="color: red;">{{ form_im.im2.errors|join:", " }}</em>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label for="id_im3">
+                                        {{ form_im.im3_type }}
+                                    </label>
+                                </td>
+                                <td>
+                                    {{ form_im.im3 }}
+                                    {% if form_im.im3.errors %}
+                                        <br/><em style="color: red;">{{ form_im.im3.errors|join:", " }}</em>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label for="id_twitter">
+                                        Twitter:
+                                    </label>
+                                </td>
+                                <td>
+                                    {{ form_im.twitter }}
+                                    {% if form_im.twitter.errors %}
+                                        <br/><em style="color: red;">{{ form_im.twitter.errors|join:", " }}</em>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label for="id_mobile">
+                                        Mobile:
+                                    </label>
+                                </td>
+                                <td>
+                                    {{ form_im.mobile }}
+                                    {% if form_im.mobile.errors %}
+                                        <br/><em style="color: red;">{{ form_im.mobile.errors|join:", " }}</em>
+                                    {% endif %}
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td colspan="2">
+                                    <input type="hidden" name="action_type" value="change_im">
+                                    <center><input class="button" type="submit" value="{% trans 'Change' %}"/></center>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+            </h3>
+        </div>
+        <div style="width: 49%; float: left; margin-left: 10px;">
+            <h3 class="description">
+                <script type="text/javascript" charset="utf-8">
+                    function replace_img(val) {
+                        $('#flag').html('<img src="{{ MEDIA_URL }}images/flags/png/' + val + '.png"/>');
+                    }
+                </script>
+                <form method="post" action="{% url profile_edit %}">
+                    <span>{% trans 'Nationality' %}</span><br/>
+                    <select name="nationality" onchange="replace_img(this.value);">
+                        {% for nation in nations %}
+                            <option value="{{ nation.code|lower }}"
+                                    {% ifequal nation.code|lower request.engine.user.profile.nationality %}selected="selected"{% endifequal %}>{{ nation.name_en }}</option>
+                        {% endfor %}
+                    </select>&nbsp;<span id="flag"></span><br style="clear: both; margin-bottom: 10px;"/>
+                    <center><input class="button" type="submit" value="{% trans 'Change' %}"/></center>
+                </form>
+            </h3>
+        </div>
+        <div style="width: 49%; float: left; margin-left: 10px;">
+            <h3 class="description">
+                <span>{% trans 'Change password' %}</span>
+
+                <div style="padding-left: 10px; padding-top: 5px;">
+                    <form method="post" action="{% url profile_edit %}">
+                        <table>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    <label for="id_old_password">{% trans 'Old password' %}:</label>
+                                </td>
+                                <td>
+                                    {{ form_pass.old_password }}
+                                    {% if form_pass.old_password.errors %}
+                                        <br/><em style="color: red;">{{ form_pass.old_password.errors|join:", "}}</em>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label for="id_new_password1">{% trans 'New password' %}:</label>
+                                </td>
+                                <td>
+                                    {{ form_pass.new_password1 }}
+                                    {% if form_pass.new_password1.errors %}
+                                        <br/><em style="color: red;">{{ form_pass.new_password1.errors|join:", "}}</em>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label for="id_new_password2">{% trans 'New password (repeat)' %}:</label>
+                                </td>
+                                <td>
+                                    {{ form_pass.new_password2 }}
+                                    {% if form_pass.new_password2.errors %}
+                                        <br/><em style="color: red;">{{ form_pass.new_password2.errors|join:", "}}</em>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    <input type="hidden" name="action_type" value="change_password">
+                                    <center><input class="button" type="submit" value="{% trans 'Change' %}"/></center>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+            </h3>
+        </div>
+    </div>
+
+    <img src="{{ MEDIA_URL }}/images/buildings_1.png" style="margin-left: -60px;"/>
+
+{% endblock %}

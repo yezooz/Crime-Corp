@@ -1,0 +1,5 @@
+{% load map %}
+
+{{ slots|SHOW_GRID:map_details.grids|safe }}
+
+<div><img id="city_back" src="{{ MEDIA_URL }}images/pixel/{{ map_details.filename }}"/>

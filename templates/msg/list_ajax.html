@@ -1,0 +1,8 @@
+{% load i18n %}
+{% if msgs %}
+    {% for msg in msgs %}
+        {% include 'modules/msg.html' %}
+    {% endfor %}
+{% else %}
+    <h3 style="text-align: center;">{% trans 'No messages' %}</h3>
+{% endif %}

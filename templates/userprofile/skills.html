@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load common i18n humanize %}
+
+{% block head %}
+    <script src="{{ MEDIA_URL }}js/date/date.js" type="text/javascript"></script>
+{% endblock %}
+
+{% block content %}
+
+    {% if request.engine.user.skills.queues %}
+        {% for k, v  in request.engine.user.skills.queues.iteritems %}
+            <h3 class="info">
+                <span style="font-size: 1.4em;">{% trans 'Gaining skill' %}: {{ request.engine.user.SKILL|KEY:k }}. </span><br/><br/>
+                <span class="countdown" id="countdown">{{ v }}</span>
+                <span class="countdown" style="font-size: 1.4em;">{% trans 'till end' %}
+                    {# [<a href="#">{% trans 'cancel' %}</a>] #}</span>
+            </h3>
+            <script type="text/javascript">
+                timer = new Timer();
+                timer.init($('#countdown'));
+            </script>
+        {% endfor %}
+    {% else %}
+        <h3 class="description">{% blocktrans %}SKILL_DESC{% endblocktrans %}</h3>
+    {% endif %}
+
+    {% if items %}
+        <table class="data" style="width: 500px;">
+            <thead>
+            <tr>
+                <th style="width: 30%">{% trans 'Name' %}</th>
+                <th style="width: 25%">{% trans 'Requirements' %}</th>
+                <th style="width: 10%">&nbsp;</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for key, val in items.iteritems %}
+                <form action="{% url do_skill val.name %}" method="post">
+                    <tr>
+                        <td class="name"><b>{{ request.engine.user.SKILL|KEY:val.name }}</b><br/>({% trans 'Level' %}
+                            {{ val.level|MINUS:1 }} &rarr; {% trans 'Level' %} {{ val.level }})
+                        </td>
+                        <td><span class="cash"> $<b>{{ val.cost|intcomma }}</b></span> + <span class="time">&nbsp;
+				<b>{{ val.time|time_h_or_m }}</b>{% trans 'min' %}</span></td>
+                        <td><input type="submit" value="{% trans 'Learn' %}"/></td>
+                    </tr>
+                </form>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <h2>{% trans 'You have learned everything' %}</h2>
+    {% endif %}
+{% endblock %}

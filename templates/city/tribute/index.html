@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load common chance humanize i18n %}
+{% block title %}{% trans 'Tributes' %}{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ MEDIA_URL }}css/module/city/tribute.css" type="text/css" media="screen"
+          title="no title" charset="utf-8"/>
+    <script src="{{ MEDIA_URL }}js/date/date.js" type="text/javascript"></script>
+{% endblock %}
+
+{% block content %}
+<h1 title="{% trans 'Tributes' %}"><img alt="{% trans 'Tributes' %}"
+                                        src="{{ MEDIA_URL }}images/capt_tributes_{{ request.engine.pref_lang }}.png"/>
+</h1>
+{# <h3 class="description">In order to take control over whole city, you need to possess over 50% of the businesses.<br/>City owner can make extra money on selling good to citizens as well as to export them to other cities. Additionally every city over default one generates extra respect every day.</h3> #}
+<h3 class="description">{% trans 'TIP' %}: {% trans 'Defending side has some advantage, so before attacking make sure your stats are at least a bit higher that them.' %}</h3>
+
+<div class="niceBoxOut" style="width: 580px;">
+    <div class="niceBox tributeBox" style="padding:0; text-align:center;">
+        <h2>{% trans 'Your' %} {% trans 'Attack' %}: {{ sums.0|intcomma }}, {% trans 'Defense' %}: {{ sums.1|intcomma }}
+            <span style="font-size:11px;">(<a href="{% url city_units %}">{% trans 'hire more units' %}</a>)</span></h2>
+        {% if next_tribute_at %}
+            <h2 style="color: red">
+                <div style="font-size: 20px;">{% trans 'Next action can be done in' %} <span
+                        id="countdown">{{ next_tribute_at }}</span></div>
+            </h2>
+            <script type="text/javascript">
+                timer = new Timer();
+                timer.init($('#countdown'));
+            </script>
+        {% endif %}
+    </div>
+</div>
+
+{% for type in request.engine.city.TRIBUTE_ORDER %}
+<div class="tributeBoxOut">
+    <div class="tributeBox">
+        <h2>{{ tribute_names|KEY:type }}</h2>
+
+        <p class="subheader">(+${{ request.engine.settings.BIZ_DETAILS|KEY:type|KEY:'cash' }} {% trans 'a day' %})</p>
+
+        <div class="owners"
+             style="background: url({{ MEDIA_URL }}images/capt_owners_{{ request.engine.pref_lang }}.png) no-repeat;">
+            <h3>{% trans 'OWNERS' %}</h3>
+            <table cellspacing="0" cellpadding="0">
+                <tbody>
+                {% for tribute in tributes|KEY:type %}
+                <tr>
+                    <td>
+                        {% ifequal tribute.0 '0' %}
+                        <b>{% trans 'Local Gang' %}</b><br/>
+                        <span style="font-size: 11px; padding-left: 8px;"><b>{% trans 'Attack' %}:</b>
+                            {{ request.engine.settings.BIZ_DETAILS|KEY:type|KEY:'attack'|intcomma }}</span><br/>
+                        <span style="font-size: 11px; padding-left: 8px;"><b>{% trans 'Defense' %}:</b>
+                            {{ request.engine.settings.BIZ_DETAILS|KEY:type|KEY:'defense'|intcomma }}</span><br/>
+                        <span style="font-size: 11px; padding-left: 8px;"
+                              title="percentage of properties">{% trans 'owns' %} <b>{{ tribute.1 }}</b> {% trans 'buildings' %} (<b>{{ tribute.2 }}%</b>)</span>
+                        {% else %}
+                        {% ifequal tribute.0 'me' %}
+                        <b>{% trans 'ME' %}</b><br/>
+                        <span style="font-size: 11px; padding-left: 8px; display: block;"
+                              title="percentage of properties">{% trans 'you own' %} <b>{{ tribute.1 }}</b> (<b>{{ tribute.2 }}%</b>)</span>
+                        {% else %}
+                        <b><a href="{% url profile tribute.0 %}" target="_blank">{{ tribute.0|capfirst }}</a></b><br/>
+                        <span style="font-size: 11px; padding-left: 8px;"
+                              title="percentage of properties">{% trans 'owns' %} <b>{{ tribute.1 }}</b> {% trans 'buildings' %} (<b>{{ tribute.2 }}%</b>)</span>
+                        {% endifequal %}
+
+                        {% endifequal %}</td>
+                    <td class="action">
+                        {% ifnotequal tribute.0 'me' %}
+                            <form action="{% url tribute %}" method="post">
+                                <input type="hidden" name="bld_type" value="{{ type }}"/>
+                                <input type="hidden" name="bld_owner" value="{{ tribute.0 }}"/>
+                                <input type="submit" value="{% trans 'Fight' %}"
+                                       {% if next_tribute_at %}disabled="disabled"{% endif %}/>
+                            </form>
+                            {% else %}
+                            &nbsp;
+                        {% endifnotequal %}
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+{% endfor %}
+<br style="clear: both;"/>
+
+{% endblock %}

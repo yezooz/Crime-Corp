@@ -1,0 +1,19 @@
+{% load i18n common %}
+
+{% if current_queue %}
+    <h2>{% trans 'Moving units' %}</h2>
+    <div class="rightWingBox">
+        <dl class="list">
+            {% for unit in current_queue %}
+                <dt>{{ forloop.counter }}.</dt>
+                <dd>{% trans 'From' %} <a href="{% url city_enter unit.0 %}">
+                    {{ current_cities|KEY:unit.0 }}</a> {% trans 'to' %} <a href="{% url city_enter unit.1 %}">
+                    {{ current_cities|KEY:unit.1 }}</a> {% trans 'arrive in' %}
+                    <span>{{ unit.3|from_timestamp|timestr }}</span> [<a
+                            href="{% url city_units_move_cancel forloop.counter0 %}"
+                            onclick="return confirm('{% trans 'Are you sure?' %}');">{% trans 'cancel' %}</a>]
+                </dd>
+            {% endfor %}
+        </dl>
+    </div>
+{% endif %}

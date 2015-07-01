@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans 'Prison' %}{% endblock %}
+
+{% block content %}
+    <h1>{% trans 'Prison' %}</h1>
+    <img src="{{ MEDIA_URL }}images/prison.png"/>
+
+    <h3 class="description">This will be your new home until {{ release }}.<br/>There's always another way. Just tell
+        your guys to send warden something he needs and I'm sure you will be free before you blink.<br/>Life's too short
+        to stay in this crappy place!</h3>
+
+    <h3>Get out NOW!</h3>
+    <form action="{% url prison %}" method="post">
+        <input type="hidden" name="action_type" value="release"/>
+        <input type="submit" value="Pay {{ settings.RELEASE_FROM_JAIL_CREDITS }} credits"/>
+    </form>
+
+    <h3>Bribe warden</h3>
+    <form action="{% url prison %}" method="post">
+        <input type="hidden" name="action_type" value="bribe"/>
+        $<input type="text" name="amount" value="0"/>
+        <input type="submit" value="Pay"/>
+    </form>
+
+{% endblock %}

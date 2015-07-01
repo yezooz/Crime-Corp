@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load common i18n humanize %}
+{% block title %}{% trans 'Messages' %}{% endblock %}
+
+{% block content %}
+    <h1>{% trans 'Messages' %}</h1>
+
+    <div class="tabs_container">
+        <div class="tabs">
+            <ul>
+                <li class="tab {% ifequal selected_tab 'inbox' %}tab_selected{% endifequal %}" id="tab_inbox"><a
+                        href="javascript:void(0);"
+                        onclick="Engine.tab_switch('inbox', '{% url msg_inbox %}'); return false;">{% trans 'inbox' %}</a><span
+                        id="tab_inbox_indicator" class="tab_indicator">&nbsp;</span></li>
+                <li class="tab {% ifequal selected_tab 'outbox' %}tab_selected{% endifequal %}" id="tab_outbox"><a
+                        href="javascript:void(0);"
+                        onclick="Engine.tab_switch('outbox', '{% url msg_outbox %}'); return false;">{% trans 'outbox' %}</a><span
+                        id="tab_outbox_indicator" class="tab_indicator">&nbsp;</span></li>
+            </ul>
+        </div>
+        <div class="tabs_content">
+            <ul class="msg" id="msgs">
+                {% if msgs %}
+                    {% for msg in msgs %}
+                        {% include 'modules/msg.html' %}
+                    {% endfor %}
+                {% else %}
+                    <h3 style="text-align: center;">{% trans 'No messages' %}</h3>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+
+    <br style="clear: both"/>
+
+{% endblock %}

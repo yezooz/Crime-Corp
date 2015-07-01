@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% load common chance humanize i18n modules %}
+{% block title %}{% trans 'Robberies' %}{% endblock %}
+
+{% block content %}
+    {# <h1>{% trans 'Robberies' %}</h1> #}
+    {# <h3 class="description">{% trans "It's the easiest way to get some money and respect for a good start. You can't involve the family into this, so that's only you and your skill. Take" %} <a href="{% url shop %}">{% trans 'some tools' %}</a> {% trans 'with you if you feel too weak.' %}</h3> #}
+
+    {% if request.engine.user.profile.heat|DIV:request.engine.user.profile.max_heat|GTE:0.9 %}
+        <h3 class="warning">{% trans "Heat level is very high which means the cops are just few steps behind you. Stay low for some time or" %}
+            <a href="{% url prison %}">{% trans 'bribe the cops' %}</a> {% trans 'right now to low down the heat.' %}
+        </h3>
+    {% endif %}
+
+    <div style="margin-top: 15px;">
+        <ul class="horizontal">
+            {% robbery_tabs page tab LANGUAGE_CODE %}
+        </ul>
+    </div>
+    <table class="data" style="width: 600px;">
+        <thead>
+        <tr>
+            <th style="width: 35%">{% trans 'Name' %}</th>
+            <th style="width: 45%" title="{% trans 'Requirements' %}">{% trans 'Requirements' %}</th>
+            <th style="width: 10%">{% trans 'Chance' %}</th>
+            <th style="width: 10%">&nbsp;</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for item in items %}
+            {% if item.is_premium %}
+            {% else %}
+
+                {% if request.engine.user.profile.total_respect|GTE:item.min_respect %}
+                    <tr class="{% cycle '' 'odd' %}">
+                        <td class="name">
+                            <b>{{ request.engine.job.ROBBERY|KEY:item.name }}</b>
+                            {% if item.is_premium %}
+                                <br/>
+                                <span style="font-size: 10px; background-color: red; color: white; padding: 2px 2px 2px 2px; cursor: pointer;"
+                                      onclick="location.href='{% url premium %}';">{% trans 'SUPPORTERS' %}</span>
+                            {% endif %}
+                            {% ifnotequal item.loot '{}' %}
+                                <ul style="margin-top:3px; display: block; list-style: none; padding-left:10px; font-size: 10px;">
+                                    <li><b>{% trans 'Chance for extra loot' %}:</b></li>
+                                    {% job_loot_items item.loots LANGUAGE_CODE %}
+                                </ul>
+                            {% endifnotequal %}
+                            <p>
+                                <span style="font-size: 10px; padding-left: 5px;"><b>{% trans 'Mastered' %} {{ item.mastery }}%</b> ({% trans 'level' %} <b>{{ item.mastery_lvl }}</b>)</span>
+                                <span style="width: 150px; height: 5px; border: 1px solid grey; display: block; padding: 0; margin: 0;"><span
+                                        style="display: block; background-color: red; width: {{ item.mastery }}%; height: 5px;">&nbsp;</span></span>
+                        </td>
+                        <td>
+                            <span title="{% trans 'Attack' %}"
+                                  class="attack">&nbsp;<b>{{ item.req_attack|intcomma }}</b></span>&nbsp;
+                            <span title="{% trans 'Respect' %}"
+                                  class="respect">&nbsp;<b>{{ item.req_respect|intcomma }}</b></span>&nbsp;
+                            <span title="{% trans 'Heat' %}" class="heat">&nbsp;+<b>{{ item.heat }}</b></span>
+                            {% if item.req %}
+                                <ul style="margin-top:3px; display: block; list-style: none; padding-left:10px;">
+                                    {% for req_name, req_lvl in item.reqs.skills.iteritems %}
+                                        {% if my_skills|KEY:req_name|GTE:req_lvl %}
+                                            <li>
+                                                <b style="background: url({{ MEDIA_URL }}images/icons/plus.gif) no-repeat left center; padding-left: 12px;"><a
+                                                        href="{% url skills %}">
+                                                    {{ request.engine.user.SKILL|KEY:req_name }}</a></b> {% trans 'Level' %} {{ req_lvl }}
+                                            </li>
+                                        {% else %}
+                                            <li>
+                                                <b style="background: url({{ MEDIA_URL }}images/icons/minus.gif) no-repeat left center; padding-left: 12px;"><a
+                                                        href="{% url skills %}">
+                                                    {{ request.engine.user.SKILL|KEY:req_name }}</a></b> {% trans 'Level' %} {{ req_lvl }}
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <b>{{ item|CHANCE:profile }}%</b>
+                        </td>
+                        <td>
+                            <form action="{% url robbery page tab %}" method="post">
+                                <div>
+                                    <input type="hidden" name="job_id" value="{{ item.id }}"/>
+                                    <input type="submit" value="{% trans 'Do Job' %}"
+                                           style="font-size: 13px; margin-bottom: -5px;"
+                                           {% ifequal item|CHANCE:profile 0 %}disabled="disabled"{% endifequal %}/>
+                                </div>
+                            </form>
+                        </td>
+                    </tr>
+                {% endif %}
+
+            {% endif %}
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}
